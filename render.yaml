@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: fitsence-frontend
+    env: static
+    buildCommand: npm install && npm run build
+    staticPublishPath: ./build
+    headers:
+      - path: /*
+        name: Cache-Control
+        value: no-cache
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: REACT_APP_SUPABASE_URL
+        value: https://fouamqukwblpyipqstfk.supabase.co
+      - key: REACT_APP_SUPABASE_ANON_KEY
+        value: sb_publishable_QPAtdo9g4WZP92w5yJ77pA_kzuf8hm5
+
