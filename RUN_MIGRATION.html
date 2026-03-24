@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>FitSense – Run Database Migration</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    min-height: 100vh;
+    background: #080f1a;
+    font-family: 'Segoe UI', sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+  .card {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(14,165,233,0.25);
+    border-radius: 20px;
+    padding: 36px;
+    max-width: 780px;
+    width: 100%;
+    box-shadow: 0 0 60px rgba(14,165,233,0.1);
+  }
+  h1 { color: #38bdf8; font-size: 24px; margin-bottom: 6px; }
+  .sub { color: rgba(255,255,255,0.4); font-size: 13px; margin-bottom: 28px; }
+  .steps { margin-bottom: 24px; }
+  .step {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    margin-bottom: 16px;
+  }
+  .num {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: rgba(14,165,233,0.2);
+    border: 1px solid rgba(14,165,233,0.4);
+    color: #38bdf8;
+    font-size: 13px; font-weight: bold;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; margin-top: 1px;
+  }
+  .step-text { color: rgba(255,255,255,0.75); font-size: 14px; line-height: 1.6; }
+  .step-text strong { color: white; }
+  pre {
+    background: rgba(0,0,0,0.5);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px;
+    padding: 16px;
+    font-size: 11px;
+    color: #86efac;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    word-break: break-word;
+    max-height: 280px;
+    overflow-y: auto;
+    margin: 12px 0;
+    scrollbar-width: thin;
+  }
+  .btn-row { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 24px; }
+  .btn {
+    padding: 12px 24px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s;
+  }
+  .btn-blue {
+    background: linear-gradient(135deg, #0ea5e9, #0284c7);
+    color: white;
+  }
+  .btn-blue:hover { box-shadow: 0 0 24px rgba(14,165,233,0.5); transform: translateY(-1px); }
+  .btn-gray {
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.12);
+    color: rgba(255,255,255,0.7);
+  }
+  .btn-gray:hover { background: rgba(255,255,255,0.12); color: white; }
+  .copied { color: #4ade80; font-size: 13px; margin-left: 8px; display: none; }
+  .tag {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 100px;
+    font-size: 11px;
+    font-weight: 600;
+    margin-right: 6px;
+  }
+  .tag-red { background: rgba(239,68,68,0.15); color: #f87171; border: 1px solid rgba(239,68,68,0.25); }
+  .tag-green { background: rgba(34,197,94,0.1); color: #4ade80; border: 1px solid rgba(34,197,94,0.2); }
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>⚡ FitSense Database Migration</h1>
+  <p class="sub">Two things need to be fixed in your Supabase database. This takes 30 seconds.</p>
+
+  <div style="background:rgba(239,68,68,0.06);border:1px solid rgba(239,68,68,0.2);border-radius:12px;padding:14px 18px;margin-bottom:24px;">
+    <p style="color:#f87171;font-size:13px;font-weight:600;margin-bottom:6px;">⚠️ Issues Detected in Your Database:</p>
+    <p style="color:rgba(255,255,255,0.6);font-size:13px;"><span class="tag tag-red">MISSING</span> <code style="color:#fca5a5;">activity_level</code> column in <code style="color:#fca5a5;">health_metrics</code> table</p>
+    <p style="color:rgba(255,255,255,0.6);font-size:13px;margin-top:6px;"><span class="tag tag-red">MISSING</span> <code style="color:#fca5a5;">fatigue_chat_logs</code> table entirely</p>
+  </div>
+
+  <div class="steps">
+    <div class="step">
+      <div class="num">1</div>
+      <div class="step-text">Click <strong>"Open Supabase SQL Editor"</strong> below — it opens your project's SQL editor directly</div>
+    </div>
+    <div class="step">
+      <div class="num">2</div>
+      <div class="step-text">Click <strong>"Copy SQL"</strong> below to copy the migration SQL</div>
+    </div>
+    <div class="step">
+      <div class="num">3</div>
+      <div class="step-text">In the Supabase SQL Editor: click inside the editor, press <strong>Ctrl+A</strong> to select all, then <strong>Ctrl+V</strong> to paste</div>
+    </div>
+    <div class="step">
+      <div class="num">4</div>
+      <div class="step-text">Click the green <strong>"Run"</strong> button (or press <strong>Ctrl+Enter</strong>)</div>
+    </div>
+  </div>
+
+  <p style="color:rgba(255,255,255,0.4);font-size:12px;margin-bottom:8px;text-transform:uppercase;letter-spacing:.1em;">SQL to Run:</p>
+  <pre id="sql">-- FitSense Complete Migration
+-- Run in Supabase SQL Editor for project: fouamqukwblpyipqstfk
+
+-- 1. Add missing activity_level column
+ALTER TABLE public.health_metrics
+ADD COLUMN IF NOT EXISTS activity_level TEXT NOT NULL DEFAULT 'sedentary'
+CHECK (activity_level IN ('sedentary', 'lightly_active', 'moderately_active', 'very_active', 'extremely_active'));
+
+-- 2. Create missing fatigue_chat_logs table
+CREATE TABLE IF NOT EXISTS public.fatigue_chat_logs (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
+  role TEXT NOT NULL CHECK (role IN ('user', 'bot')),
+  message TEXT NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS fatigue_chat_logs_user_id_idx
+  ON public.fatigue_chat_logs(user_id, created_at DESC);
+ALTER TABLE public.fatigue_chat_logs ENABLE ROW LEVEL SECURITY;
+
+-- 3. RLS Policies
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename='health_metrics' AND policyname='Users can view own health metrics') THEN
+    CREATE POLICY "Users can view own health metrics" ON public.health_metrics FOR SELECT USING (auth.uid() = user_id);
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename='health_metrics' AND policyname='Users can insert own health metrics') THEN
+    CREATE POLICY "Users can insert own health metrics" ON public.health_metrics FOR INSERT WITH CHECK (auth.uid() = user_id);
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename='health_metrics' AND policyname='Users can update own health metrics') THEN
+    CREATE POLICY "Users can update own health metrics" ON public.health_metrics FOR UPDATE USING (auth.uid() = user_id);
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename='health_metrics' AND policyname='Users can delete own health metrics') THEN
+    CREATE POLICY "Users can delete own health metrics" ON public.health_metrics FOR DELETE USING (auth.uid() = user_id);
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename='fatigue_chat_logs' AND policyname='Users can insert own chat logs') THEN
+    CREATE POLICY "Users can insert own chat logs" ON public.fatigue_chat_logs FOR INSERT WITH CHECK (auth.uid() = user_id);
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename='fatigue_chat_logs' AND policyname='Users can view own chat logs') THEN
+    CREATE POLICY "Users can view own chat logs" ON public.fatigue_chat_logs FOR SELECT USING (auth.uid() = user_id);
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename='fatigue_chat_logs' AND policyname='Users can delete own chat logs') THEN
+    CREATE POLICY "Users can delete own chat logs" ON public.fatigue_chat_logs FOR DELETE USING (auth.uid() = user_id);
+  END IF;
+END $$;
+
+-- Verify
+SELECT tablename, rowsecurity FROM pg_tables WHERE schemaname = 'public' ORDER BY tablename;</pre>
+
+  <div class="btn-row">
+    <a href="https://supabase.com/dashboard/project/fouamqukwblpyipqstfk/sql/new" target="_blank">
+      <button class="btn btn-blue">🚀 Open Supabase SQL Editor</button>
+    </a>
+    <button class="btn btn-gray" onclick="copySql()">📋 Copy SQL</button>
+    <span class="copied" id="copied">✓ Copied!</span>
+  </div>
+
+  <p style="color:rgba(255,255,255,0.2);font-size:11px;margin-top:20px;">After running, the profile setup page will save correctly and the fatigue chatbot will persist messages.</p>
+</div>
+
+<script>
+function copySql() {
+  const sql = document.getElementById('sql').innerText;
+  navigator.clipboard.writeText(sql).then(() => {
+    const el = document.getElementById('copied');
+    el.style.display = 'inline';
+    setTimeout(() => el.style.display = 'none', 3000);
+  });
+}
+</script>
+</body>
+</html>
