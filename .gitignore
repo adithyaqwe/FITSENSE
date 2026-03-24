@@ -30,4 +30,4 @@ err.log
 Thumbs.db
 
 # Misc
-.gemini/
+.cache/
