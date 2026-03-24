@@ -4,8 +4,11 @@
 // =============================================
 
 export function calculateBMI(weightKg, heightCm) {
+  if (!weightKg || !heightCm) return null;
   const hm = heightCm / 100;
-  return (weightKg / (hm * hm)).toFixed(1);
+  const bmiVal = parseFloat((weightKg / (hm * hm)).toFixed(1));
+  const category = getBMICategory(bmiVal);
+  return { bmi: bmiVal, category: category.label, color: category.color };
 }
 
 export function getBMICategory(bmi) {
@@ -49,14 +52,13 @@ export function calculateMacros(tdee, goal) {
 }
 
 export function calculateFitnessProfile({ age, gender, heightCm, weightKg, activityLevel, fitnessGoal }) {
-  const bmi = calculateBMI(weightKg, heightCm);
-  const { label: bmiCategory } = getBMICategory(bmi);
+  const bmiResult = calculateBMI(weightKg, heightCm);
   const tdee = calculateTDEE(weightKg, heightCm, age, gender, activityLevel);
   const macros = calculateMacros(tdee, fitnessGoal);
   
   return { 
-    bmi, 
-    bmiCategory, 
+    bmi: bmiResult?.bmi, 
+    bmiCategory: bmiResult?.category, 
     bmr: tdee, // Keeping property names consistent for the UI
     tdee, 
     targetCalories: macros.calories, 
