@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Dumbbell, RefreshCw, Clock, Flame } from 'lucide-react'
+import { Dumbbell, RefreshCw, Clock, Flame, Play, X } from 'lucide-react'
 import AppLayout from './AppLayout'
 import { useAuth } from './AuthContext'
 import { useHealthMetrics, useWorkoutPlan } from './useData'
@@ -14,19 +14,30 @@ const DAY_COLORS = {
   Thursday: '#a855f7', Friday: '#ef4444', Saturday: '#eab308', Sunday: '#6b7280',
 }
 
-function ExerciseRow({ exercise, index }) {
+function ExerciseRow({ exercise, index, onPlay }) {
   return (
     <motion.div
       initial={{ opacity: 0, x: -10 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ delay: index * 0.04 }}
-      className="flex items-center gap-4 py-3 border-b border-white/5 last:border-0">
+      className="flex items-center gap-4 py-3 border-b border-white/5 last:border-0 group">
       <div className="w-7 h-7 rounded-lg flex items-center justify-center font-mono text-xs text-white/30 flex-shrink-0"
         style={{ background: 'rgba(255,255,255,0.05)' }}>
         {String(index + 1).padStart(2, '0')}
       </div>
       <div className="flex-1">
-        <div className="font-body text-white font-medium text-sm">{exercise.name}</div>
+        <div className="flex items-center gap-2">
+          <div className="font-body text-white font-medium text-sm">{exercise.name}</div>
+          {exercise.videoUrl && (
+            <button 
+              onClick={() => onPlay(exercise)}
+              className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded-md hover:bg-white/10 text-brand-400"
+              title="Watch Demo"
+            >
+              <Play size={12} fill="currentColor" />
+            </button>
+          )}
+        </div>
         <div className="font-body text-white/35 text-xs mt-0.5">{exercise.muscle} · {exercise.equipment}</div>
       </div>
       <div className="flex gap-4 flex-shrink-0">
@@ -59,6 +70,7 @@ export default function Transformation() {
   const { data: savedPlan, refetch } = useWorkoutPlan()
   const [generating, setGenerating] = useState(false)
   const [currentPlan, setCurrentPlan] = useState(null)
+  const [selectedEx, setSelectedEx] = useState(null)
   const [selectedDay, setSelectedDay] = useState(() => {
     const d = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
     return d[new Date().getDay()]
@@ -230,7 +242,7 @@ export default function Transformation() {
                           <div>
                             <p className="section-label mb-2">Exercises</p>
                             {todayWorkout.exercises?.map((exercise, i) => (
-                              <ExerciseRow key={i} exercise={exercise} index={i} />
+                              <ExerciseRow key={i} exercise={exercise} index={i} onPlay={setSelectedEx} />
                             ))}
                           </div>
 
@@ -258,6 +270,83 @@ export default function Transformation() {
           </div>
         )}
       </div>
+
+      {/* Video Modal */}
+      <AnimatePresence>
+        {selectedEx && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0 }} 
+              animate={{ opacity: 1 }} 
+              exit={{ opacity: 0 }}
+              onClick={() => setSelectedEx(null)}
+              className="absolute inset-0 bg-black/90 backdrop-blur-sm"
+            />
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="relative w-full max-w-4xl rounded-3xl overflow-hidden glass-premium border border-white/10"
+              onClick={e => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between p-6 border-b border-white/5 bg-white/2">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-brand-500/10 flex items-center justify-center">
+                    <Play className="w-5 h-5 text-brand-500" fill="currentColor" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-display text-white tracking-wide">{selectedEx.name}</h2>
+                    <p className="text-xs text-white/40 font-body uppercase tracking-widest mt-0.5">{selectedEx.muscle} · {selectedEx.equipment}</p>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => setSelectedEx(null)}
+                  className="p-2 rounded-xl hover:bg-white/5 text-white/40 hover:text-white transition-all"
+                >
+                  <X size={24} />
+                </button>
+              </div>
+
+              <div className="aspect-video bg-black relative">
+                {selectedEx.videoUrl ? (
+                  <iframe 
+                    src={selectedEx.videoUrl} 
+                    className="w-full h-full"
+                    title={selectedEx.name}
+                    frameBorder="0" 
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                    allowFullScreen
+                  />
+                ) : (
+                  <div className="w-full h-full flex flex-col items-center justify-center gap-4">
+                    <div className="w-16 h-16 rounded-full border-4 border-brand-500/20 border-t-brand-500 animate-spin" />
+                    <p className="text-white/40 font-body text-sm">Searching for demo video...</p>
+                  </div>
+                )}
+              </div>
+              
+              <div className="p-6 bg-white/2 border-t border-white/5">
+                <div className="flex gap-8">
+                  <div>
+                    <p className="section-label mb-1">Target Sets</p>
+                    <p className="text-xl font-display text-white italic">{selectedEx.sets}</p>
+                  </div>
+                  <div>
+                    <p className="section-label mb-1">Reps/Duration</p>
+                    <p className="text-xl font-display text-white italic">{selectedEx.reps}</p>
+                  </div>
+                  {selectedEx.rest && (
+                    <div>
+                      <p className="section-label mb-1">Rest Interval</p>
+                      <p className="text-xl font-display text-white/50 italic">{selectedEx.rest}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </AppLayout>
   )
 }
