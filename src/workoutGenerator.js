@@ -1,139 +1,60 @@
 // =============================================
 // FitSense Workout Generator
-// Rule-based algorithm from user payload
+// AI-Tailored algorithm by goal & level
 // =============================================
 
 export function generateWorkoutPlan(fitnessGoal, rawActivityLevel) {
-  // Map our UI's rawActivityLevel (sedentary, light, etc) to string values the user logic expects
+  // 1. Determine Fitness Level
   let level = "beginner";
   if (['extremely_active'].includes(rawActivityLevel)) level = "extreme";
   else if (['very_active'].includes(rawActivityLevel)) level = "advanced";
   else if (['moderately_active'].includes(rawActivityLevel)) level = "intermediate";
 
-  // Hardcoded DB from user
+  // 2. Goal-Specific Tuning Parameters
+  const tuning = {
+    fat_loss: { repRange: "15-20", setMult: 3, rest: "45s", cardioBonus: 10 },
+    muscle_gain: { repRange: "8-12", setMult: 4, rest: "90s", cardioBonus: 0 },
+    bulk: { repRange: "5-8", setMult: 5, rest: "120s", cardioBonus: -5 },
+    lean_body: { repRange: "10-15", setMult: 4, rest: "60s", cardioBonus: 5 },
+  }[fitnessGoal] || { repRange: "10-12", setMult: 3, rest: "60s", cardioBonus: 0 };
+
+  // 3. Exercise Database (Shared)
   const db = {
     beginner: {
-      chest: [
-        { name: "Push-ups", sets: 3, reps: "10-15" },
-        { name: "Dumbbell Press", sets: 3, reps: "10-12" },
-      ],
-      back: [
-        { name: "Dumbbell Rows", sets: 3, reps: "10-12" },
-        { name: "Lat Pulldowns", sets: 3, reps: "10-15" },
-      ],
-      legs: [
-        { name: "Bodyweight Squats", sets: 3, reps: "15-20" },
-        { name: "Lunges", sets: 3, reps: "10-12/leg" },
-      ],
-      shoulders: [
-        { name: "Dumbbell Overhead Press", sets: 3, reps: "10-12" },
-        { name: "Lateral Raises", sets: 3, reps: "12-15" },
-      ],
-      arms: [
-        { name: "Bicep Curls", sets: 3, reps: "12-15" },
-        { name: "Tricep Dips", sets: 3, reps: "10-15" },
-      ],
-      core: [
-        { name: "Plank", sets: 3, reps: "30-45 sec" },
-        { name: "Crunches", sets: 3, reps: "15-20" },
-      ],
-      cardio: [
-        { name: "Brisk Walking", sets: 1, reps: "30 min" },
-        { name: "Cycling", sets: 1, reps: "20 min" },
-      ],
+      chest: [{ name: "Push-ups", muscle: "Chest", equipment: "Bodyweight" }, { name: "Dumbbell Press", muscle: "Chest", equipment: "Dumbbells" }],
+      back: [{ name: "Dumbbell Rows", muscle: "Back", equipment: "Dumbbells" }, { name: "Lat Pulldowns", muscle: "Back/Lats", equipment: "Cable" }],
+      legs: [{ name: "Bodyweight Squats", muscle: "Legs", equipment: "Bodyweight" }, { name: "Lunges", muscle: "Legs", equipment: "Bodyweight" }],
+      shoulders: [{ name: "Dumbbell Overhead Press", muscle: "Shoulders", equipment: "Dumbbells" }, { name: "Lateral Raises", muscle: "Shoulders", equipment: "Dumbbells" }],
+      arms: [{ name: "Bicep Curls", muscle: "Biceps", equipment: "Dumbbells" }, { name: "Tricep Dips", muscle: "Triceps", equipment: "Bench" }],
+      core: [{ name: "Plank", muscle: "Core", equipment: "Bodyweight" }, { name: "Crunches", muscle: "Core", equipment: "Bodyweight" }],
+      cardio: [{ name: "Brisk Walking", muscle: "Heart", equipment: "None" }, { name: "Cycling", muscle: "Heart", equipment: "Bike" }],
     },
     intermediate: {
-      chest: [
-        { name: "Barbell Bench Press", sets: 4, reps: "8-10" },
-        { name: "Incline Dumbbell Press", sets: 3, reps: "10-12" },
-      ],
-      back: [
-        { name: "Pull-ups", sets: 4, reps: "to failure" },
-        { name: "Barbell Rows", sets: 4, reps: "8-10" },
-      ],
-      legs: [
-        { name: "Barbell Squats", sets: 4, reps: "8-10" },
-        { name: "Romanian Deadlifts", sets: 4, reps: "10-12" },
-      ],
-      shoulders: [
-        { name: "Military Press", sets: 4, reps: "8-10" },
-        { name: "Face Pulls", sets: 3, reps: "12-15" },
-      ],
-      arms: [
-        { name: "Barbell Curls", sets: 3, reps: "10-12" },
-        { name: "Skull Crushers", sets: 3, reps: "10-12" },
-      ],
-      core: [
-        { name: "Hanging Leg Raises", sets: 3, reps: "12-15" },
-        { name: "Russian Twists", sets: 3, reps: "20/side" },
-      ],
-      cardio: [
-        { name: "HIIT Sprints", sets: 6, reps: "30s sprint/1m walk" },
-        { name: "Stairmaster", sets: 1, reps: "20 min" },
-      ],
+      chest: [{ name: "Barbell Bench Press", muscle: "Chest", equipment: "Barbell" }, { name: "Incline Dumbbell Press", muscle: "Chest", equipment: "Dumbbells" }],
+      back: [{ name: "Pull-ups", muscle: "Back", equipment: "Bar/Bodyweight" }, { name: "Barbell Rows", muscle: "Back", equipment: "Barbell" }],
+      legs: [{ name: "Barbell Squats", muscle: "Legs", equipment: "Barbell" }, { name: "Romanian Deadlifts", muscle: "Posterior Chain", equipment: "Barbell" }],
+      shoulders: [{ name: "Military Press", muscle: "Shoulders", equipment: "Barbell" }, { name: "Face Pulls", muscle: "Shoulders", equipment: "Cable" }],
+      arms: [{ name: "Barbell Curls", muscle: "Biceps", equipment: "Barbell" }, { name: "Skull Crushers", muscle: "Triceps", equipment: "Barbell/Dumbbells" }],
+      core: [{ name: "Hanging Leg Raises", muscle: "Core", equipment: "Bar" }, { name: "Russian Twists", muscle: "Core", equipment: "Medicine Ball" }],
+      cardio: [{ name: "HIIT Sprints", muscle: "Heart", equipment: "Treadmill" }, { name: "Stairmaster", muscle: "Heart", equipment: "Machine" }],
     },
     advanced: {
-      chest: [
-        { name: "Weighted Dips", sets: 4, reps: "8-10" },
-        { name: "Pause Bench Press", sets: 4, reps: "5-8" },
-      ],
-      back: [
-        { name: "Weighted Pull-ups", sets: 4, reps: "8-10" },
-        { name: "Deadlifts", sets: 4, reps: "5-8" },
-      ],
-      legs: [
-        { name: "Front Squats", sets: 4, reps: "6-8" },
-        { name: "Bulgarian Split Squats", sets: 3, reps: "8-10/leg" },
-      ],
-      shoulders: [
-        { name: "Overhead Pin Press", sets: 4, reps: "6-8" },
-        { name: "Lateral Raises (Heavy)", sets: 4, reps: "10-12" },
-      ],
-      arms: [
-        { name: "Preacher Curls", sets: 4, reps: "8-10" },
-        { name: "Close Grip Bench", sets: 4, reps: "6-8" },
-      ],
-      core: [
-        { name: "Ab Wheel Rollouts", sets: 4, reps: "10-15" },
-        { name: "Dragon Flags", sets: 3, reps: "to failure" },
-      ],
-      cardio: [
-        { name: "Concept2 Rower Sprints", sets: 8, reps: "500m" },
-        { name: "Assault Bike", sets: 1, reps: "15 min intervals" },
-      ],
+      chest: [{ name: "Weighted Dips", muscle: "Chest/Triceps", equipment: "Dip Bar + Weight" }, { name: "Pause Bench Press", muscle: "Chest", equipment: "Barbell" }],
+      back: [{ name: "Weighted Pull-ups", muscle: "Back", equipment: "Bar + Weight" }, { name: "Deadlifts", muscle: "Full Body", equipment: "Barbell" }],
+      legs: [{ name: "Front Squats", muscle: "Legs/Core", equipment: "Barbell" }, { name: "Bulgarian Split Squats", muscle: "Legs", equipment: "Dumbbells" }],
+      shoulders: [{ name: "Overhead Pin Press", muscle: "Shoulders", equipment: "Rack" }, { name: "Lateral Raises (Heavy)", muscle: "Shoulders", equipment: "Dumbbells" }],
+      arms: [{ name: "Preacher Curls", muscle: "Biceps", equipment: "Bench" }, { name: "Close Grip Bench", muscle: "Triceps", equipment: "Barbell" }],
+      core: [{ name: "Ab Wheel Rollouts", muscle: "Core", equipment: "Ab Wheel" }, { name: "Dragon Flags", muscle: "Core", equipment: "Bench" }],
+      cardio: [{ name: "Concept2 Rower Sprints", muscle: "Full Body", equipment: "Rower" }, { name: "Assault Bike", muscle: "Full Body", equipment: "Assault Bike" }],
     },
     extreme: {
-      chest: [
-        { name: "One-arm Pushups", sets: 4, reps: "8-10/arm" },
-        { name: "Heavy Weighted Dips", sets: 5, reps: "6-8" },
-        { name: "Incline Bench Press (Heavy)", sets: 4, reps: "5-6" },
-      ],
-      back: [
-        { name: "Muscle-ups", sets: 4, reps: "5-8" },
-        { name: "Heavy Block Pulls", sets: 4, reps: "4-6" },
-        { name: "Front Lever Holds", sets: 4, reps: "15-20 sec" },
-      ],
-      legs: [
-        { name: "Heavy Back Squats", sets: 5, reps: "3-5" },
-        { name: "Pistol Squats", sets: 4, reps: "10/leg" },
-        { name: "Box Jumps (High)", sets: 4, reps: "8-10" },
-      ],
-      shoulders: [
-        { name: "Handstand Pushups", sets: 4, reps: "8-12" },
-        { name: "Heavy Push Press", sets: 5, reps: "4-6" },
-      ],
-      arms: [
-        { name: "Strict Barbell Curls", sets: 5, reps: "6-8" },
-        { name: "Weighted Tricep Dips", sets: 5, reps: "8-10" },
-      ],
-      core: [
-        { name: "Human Flag Practice", sets: 4, reps: "10 sec/side" },
-        { name: "L-sit Holds", sets: 4, reps: "20-30 sec" },
-      ],
-      cardio: [
-        { name: "100 Burpees for Time", sets: 1, reps: "ASAP" },
-        { name: "Murph WOD (weighted vest)", sets: 1, reps: "Full" },
-      ],
+      chest: [{ name: "One-arm Pushups", muscle: "Chest", equipment: "Bodyweight" }, { name: "Heavy Weighted Dips", muscle: "Chest", equipment: "Dip Bar" }, { name: "Incline Bench Press (Heavy)", muscle: "Chest", equipment: "Barbell" }],
+      back: [{ name: "Muscle-ups", muscle: "Back/Arms", equipment: "Bar" }, { name: "Heavy Block Pulls", muscle: "Back", equipment: "Barbell" }, { name: "Front Lever Holds", muscle: "Core/Back", equipment: "Bar" }],
+      legs: [{ name: "Heavy Back Squats", muscle: "Legs", equipment: "Barbell" }, { name: "Pistol Squats", muscle: "Legs", equipment: "Bodyweight" }, { name: "Box Jumps (High)", muscle: "Legs", equipment: "Box" }],
+      shoulders: [{ name: "Handstand Pushups", muscle: "Shoulders", equipment: "Floor/Wall" }, { name: "Heavy Push Press", muscle: "Shoulders", equipment: "Barbell" }],
+      arms: [{ name: "Strict Barbell Curls", muscle: "Biceps", equipment: "Barbell" }, { name: "Weighted Tricep Dips", muscle: "Triceps", equipment: "Bar" }],
+      core: [{ name: "Human Flag Practice", muscle: "Core/Lateral", equipment: "Vertical Bar" }, { name: "L-sit Holds", muscle: "Core", equipment: "Floor/Bar" }],
+      cardio: [{ name: "100 Burpees for Time", muscle: "Heart", equipment: "Floor" }, { name: "Murph WOD (weighted vest)", muscle: "Full Body", equipment: "Everything" }],
     },
   };
 
@@ -159,39 +80,31 @@ export function generateWorkoutPlan(fitnessGoal, rawActivityLevel) {
     "HIIT Sprints": "https://www.youtube.com/embed/6i7BvPPr1_w",
   };
 
-  const plan = db[level];
-
-  // Inject video URLs into plan
-  for (const muscle in plan) {
-    plan[muscle] = plan[muscle].map(ex => ({
-      ...ex,
-      videoUrl: videoMap[ex.name] || `https://www.youtube.com/embed?listType=search&list=${encodeURIComponent(ex.name + ' exercise demo')}`
-    }));
-  }
+  // 4. Generate the Week
+  const basePlan = db[level];
+  const applyTuning = (exs) => exs.map(ex => ({
+    ...ex,
+    sets: tuning.setMult,
+    reps: tuning.repRange,
+    rest: tuning.rest,
+    videoUrl: videoMap[ex.name] || `https://www.youtube.com/embed?listType=search&list=${encodeURIComponent(ex.name + ' exercise demo')}`
+  }));
 
   const weeklySchedule = {
-    Monday: { name: "Chest & Triceps", emoji: "🏋️", type: "strength", exercises: [...plan.chest, ...plan.arms], duration: 45 },
-    Tuesday: { name: "Back & Biceps", emoji: "💪", type: "strength", exercises: [...plan.back, ...plan.arms], duration: 45 },
-    Wednesday: { name: "Active Recovery", emoji: "🧘", type: "recovery", exercises: plan.cardio, duration: 30 },
-    Thursday: { name: "Legs & Core", emoji: "🦵", type: "strength", exercises: [...plan.legs, ...plan.core], duration: 50 },
-    Friday: { name: "Shoulders & Arms", emoji: "🎯", type: "strength", exercises: [...plan.shoulders, ...plan.arms], duration: 45 },
-    Saturday: { name: "Full Body HIIT", emoji: "⚡", type: "cardio", exercises: [...plan.core, ...plan.cardio], duration: 40 },
+    Monday: { name: "Chest & Triceps", emoji: "🏋️", type: "strength", exercises: applyTuning([...basePlan.chest, ...basePlan.arms]), duration: 45 + tuning.cardioBonus },
+    Tuesday: { name: "Back & Biceps", emoji: "💪", type: "strength", exercises: applyTuning([...basePlan.back, ...basePlan.arms]), duration: 45 + tuning.cardioBonus },
+    Wednesday: { name: "Active Recovery", emoji: "🧘", type: "recovery", exercises: applyTuning(basePlan.cardio), duration: 30 + tuning.cardioBonus },
+    Thursday: { name: "Legs & Core", emoji: "🦵", type: "strength", exercises: applyTuning([...basePlan.legs, ...basePlan.core]), duration: 50 + tuning.cardioBonus },
+    Friday: { name: "Shoulders & Arms", emoji: "🎯", type: "strength", exercises: applyTuning([...basePlan.shoulders, ...basePlan.arms]), duration: 45 + tuning.cardioBonus },
+    Saturday: { name: "Full Body HIIT", emoji: "⚡", type: "cardio", exercises: applyTuning([...basePlan.core, ...basePlan.cardio]), duration: 40 + tuning.cardioBonus },
     Sunday: { name: "Rest Day", emoji: "😴", type: "rest", exercises: [], duration: 0, notes: "Complete rest and recovery." },
   };
 
-  // Add warmups and cooldowns to match the properties our UI components expect
+  // 5. Add meta info
   for (const day in weeklySchedule) {
     if (weeklySchedule[day].type !== 'rest') {
-      weeklySchedule[day].warmup = [
-        '5-10 min light cardio',
-        'Dynamic stretches',
-        'Warmup sets for first exercise'
-      ];
-      weeklySchedule[day].cooldown = [
-        '5 min static stretching',
-        'Foam rolling',
-        'Deep breathing'
-      ];
+      weeklySchedule[day].warmup = ['5-10 min light cardio', 'Dynamic stretches', 'Warmup sets'];
+      weeklySchedule[day].cooldown = ['5 min static stretching', 'Foam rolling'];
     }
   }
 
