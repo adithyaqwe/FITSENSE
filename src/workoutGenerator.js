@@ -75,28 +75,6 @@ export function generateWorkoutPlan(fitnessGoal, rawActivityLevel, manualLevel) 
     },
   };
 
-  const videoMap = {
-    "Push-ups": "https://www.youtube.com/embed/IODxDxX7oi4",
-    "Dumbbell Press": "https://www.youtube.com/embed/VmByADxun-8",
-    "Dumbbell Rows": "https://www.youtube.com/embed/5PoOp6PQ9Ic",
-    "Lat Pulldowns": "https://www.youtube.com/embed/CAwf7n6Luuc",
-    "Bodyweight Squats": "https://www.youtube.com/embed/aclHkVaku9U",
-    "Lunges": "https://www.youtube.com/embed/wrwwXE_67NI",
-    "Dumbbell Overhead Press": "https://www.youtube.com/embed/M2rwvNhSj00",
-    "Lateral Raises": "https://www.youtube.com/embed/3VcKaXpzqRo",
-    "Bicep Curls": "https://www.youtube.com/embed/ykJmrZ5v0Oo",
-    "Tricep Dips": "https://www.youtube.com/embed/2z8JmcrW-As",
-    "Plank": "https://www.youtube.com/embed/B296mZDhrP4",
-    "Crunches": "https://www.youtube.com/embed/Xyd_fa5zoEU",
-    "Barbell Bench Press": "https://www.youtube.com/embed/rT7DgCr-3pg",
-    "Pull-ups": "https://www.youtube.com/embed/eGo4IYlbE5g",
-    "Barbell Rows": "https://www.youtube.com/embed/RQU8wZad-00",
-    "Barbell Squats": "https://www.youtube.com/embed/1oed-UmAxFs",
-    "Deadlifts": "https://www.youtube.com/embed/op9kVnSso6Q",
-    "Military Press": "https://www.youtube.com/embed/2yjwxtZ4D_w",
-    "HIIT Sprints": "https://www.youtube.com/embed/6i7BvPPr1_w",
-  };
-
   const plan = baseDb[level];
 
   // Goals-Specific Modification logic
@@ -116,7 +94,6 @@ export function generateWorkoutPlan(fitnessGoal, rawActivityLevel, manualLevel) 
       sets: finalSets,
       reps: finalReps,
       rest: tuning.rest,
-      videoUrl: videoMap[ex.name] || `https://www.youtube.com/embed?listType=search&list=${encodeURIComponent(ex.name + ' exercise demo')}`
     }
   });
 
