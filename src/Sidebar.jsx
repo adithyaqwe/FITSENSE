@@ -1,17 +1,23 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Zap, LayoutDashboard, Utensils, Dumbbell, CheckSquare, TrendingUp, User, LogOut, Menu, X, Trophy } from 'lucide-react'
+import { Zap, LayoutDashboard, Utensils, Dumbbell, CheckSquare, TrendingUp, User, LogOut, Menu, X, Trophy, Apple, IndianRupee, Brain } from 'lucide-react'
 import { useState } from 'react'
 import { useAuth } from './AuthContext'
 
 const NAV_ITEMS = [
-  { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
-  { icon: Utensils, label: 'Diet Plan', path: '/diet' },
-  { icon: Dumbbell, label: 'Transformation', path: '/transformation' },
-  { icon: CheckSquare, label: 'Daily Tracker', path: '/tracker' },
-  { icon: TrendingUp, label: 'Progress', path: '/progress' },
-  { icon: Trophy, label: 'Fitness Test', path: '/fitness-test' },
-  { icon: User, label: 'Profile', path: '/profile' },
+  { icon: LayoutDashboard, label: 'Dashboard',    path: '/dashboard'      },
+  { icon: Utensils,       label: 'Diet Plan',     path: '/diet'           },
+  { icon: Dumbbell,       label: 'Transformation',path: '/transformation' },
+  { icon: CheckSquare,    label: 'Daily Tracker',  path: '/tracker'        },
+  { icon: TrendingUp,     label: 'Progress',       path: '/progress'       },
+  { icon: Trophy,         label: 'Fitness Test',   path: '/fitness-test'   },
+  { icon: User,           label: 'Profile',        path: '/profile'        },
+]
+
+const DIET_ITEMS = [
+  { icon: Apple,          label: 'Food Tracker',   path: '/food-tracker'   },
+  { icon: IndianRupee,    label: 'Expense Tracker',path: '/expense-tracker'},
+  { icon: Brain,          label: 'ML Insights',    path: '/ml-insights'   },
 ]
 
 function SidebarContent({ onClose }) {
@@ -68,6 +74,31 @@ function SidebarContent({ onClose }) {
                 <motion.div
                   layoutId="sidebar-dot"
                   className="ml-auto w-1.5 h-1.5 rounded-full bg-brand-500"
+                />
+              )}
+            </Link>
+          )
+        })}
+
+        {/* Diet & Expense section */}
+        <div className="pt-4 pb-2 px-2">
+          <span className="section-label">Diet & Expenses</span>
+        </div>
+        {DIET_ITEMS.map((item) => {
+          const active = location.pathname === item.path
+          return (
+            <Link
+              key={item.path}
+              to={item.path}
+              onClick={onClose}
+              className={`nav-item ${active ? 'active' : ''}`}>
+              <item.icon className="w-4 h-4 flex-shrink-0" />
+              {item.label}
+              {active && (
+                <motion.div
+                  layoutId="sidebar-dot2"
+                  className="ml-auto w-1.5 h-1.5 rounded-full"
+                  style={{ background: '#a855f7' }}
                 />
               )}
             </Link>

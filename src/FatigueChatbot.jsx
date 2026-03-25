@@ -1,8 +1,9 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { MessageCircle, X, Send, Bot, User, Zap, ChevronDown, Database, WifiOff } from 'lucide-react'
+import { X, Send, User, ChevronDown, Database, WifiOff } from 'lucide-react'
 import { supabase, isSupabaseConnected } from './supabase'
 import { useAuth } from './AuthContext'
+import AIBotAvatar from './AIBotAvatar'
 
 // ─── Fatigue Knowledge Base ───────────────────────────────────────────────────
 
@@ -448,16 +449,16 @@ export default function FatigueChatbot() {
       <motion.button
         id="fatigue-chatbot-toggle"
         onClick={() => setOpen(o => !o)}
-        className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-2xl flex items-center justify-center shadow-2xl"
+        className="fixed bottom-6 right-6 z-50 w-16 h-16 rounded-2xl flex items-center justify-center shadow-2xl"
         style={{
           background: open
             ? 'linear-gradient(135deg, #ef4444, #dc2626)'
-            : 'linear-gradient(135deg, #0ea5e9, #0284c7)',
+            : 'transparent',
           boxShadow: open
             ? '0 0 30px rgba(239,68,68,0.45), 0 8px 25px rgba(0,0,0,0.4)'
-            : '0 0 30px rgba(14,165,233,0.45), 0 8px 25px rgba(0,0,0,0.4)'
+            : '0 0 40px rgba(14,165,233,0.5), 0 8px 30px rgba(0,0,0,0.5)'
         }}
-        whileHover={{ scale: 1.08, y: -2 }}
+        whileHover={{ scale: 1.08, y: -3 }}
         whileTap={{ scale: 0.95 }}
       >
         <AnimatePresence mode="wait">
@@ -466,8 +467,8 @@ export default function FatigueChatbot() {
               <X className="w-6 h-6 text-white" />
             </motion.div>
           ) : (
-            <motion.div key="chat" initial={{ rotate: 90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: -90, opacity: 0 }} transition={{ duration: 0.2 }}>
-              <MessageCircle className="w-6 h-6 text-white" />
+            <motion.div key="bot" initial={{ scale: 0.7, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.7, opacity: 0 }} transition={{ duration: 0.2 }}>
+              <AIBotAvatar size="lg" bounce={true} glow={true} pulse={true} />
             </motion.div>
           )}
         </AnimatePresence>
@@ -504,17 +505,16 @@ export default function FatigueChatbot() {
             }}
           >
             {/* Header */}
-            <div className="flex-shrink-0 px-5 py-4 flex items-center gap-3"
+            <div className="flex-shrink-0 px-5 py-4 flex items-center gap-4"
               style={{
                 background: 'linear-gradient(135deg, rgba(14,165,233,0.12), rgba(2,132,199,0.06))',
                 borderBottom: '1px solid rgba(14,165,233,0.15)'
               }}>
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
-                style={{ background: 'linear-gradient(135deg, #0ea5e9, #0284c7)', boxShadow: '0 0 20px rgba(14,165,233,0.4)' }}>
-                <Zap className="w-5 h-5 text-white" fill="currentColor" />
+              <div className="flex-shrink-0 w-14 flex items-center justify-center py-2">
+                <AIBotAvatar size="lg" bounce={true} glow={true} />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-white font-semibold text-sm leading-tight">Recovery Bot</p>
+                <p className="text-white font-bold text-base leading-tight">Recovery Bot</p>
                 <div className="flex items-center gap-1.5 mt-0.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-green-400"
                     style={{ boxShadow: '0 0 6px rgba(74,222,128,0.7)' }} />
@@ -553,12 +553,16 @@ export default function FatigueChatbot() {
                   className={`flex gap-2.5 ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}
                 >
                   {/* Avatar */}
-                  <div className={`w-7 h-7 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5 ${msg.role === 'user' ? 'bg-gradient-to-br from-sky-500 to-blue-600' : 'bg-gradient-to-br from-sky-600 to-cyan-500'}`}
-                    style={{ boxShadow: '0 0 10px rgba(14,165,233,0.3)' }}>
-                    {msg.role === 'user'
-                      ? <User className="w-3.5 h-3.5 text-white" />
-                      : <Bot className="w-3.5 h-3.5 text-white" />}
-                  </div>
+                  {msg.role === 'user' ? (
+                    <div className="w-7 h-7 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5 bg-gradient-to-br from-sky-500 to-blue-600"
+                      style={{ boxShadow: '0 0 10px rgba(14,165,233,0.3)' }}>
+                      <User className="w-3.5 h-3.5 text-white" />
+                    </div>
+                  ) : (
+                    <div className="flex-shrink-0 mt-0.5">
+                      <AIBotAvatar size="sm" bounce={false} glow={true} />
+                    </div>
+                  )}
 
                   {/* Bubble */}
                   <div className={`max-w-[78%] ${msg.role === 'user' ? 'items-end' : 'items-start'} flex flex-col gap-1`}>
@@ -594,9 +598,8 @@ export default function FatigueChatbot() {
                   exit={{ opacity: 0 }}
                   className="flex gap-2.5 flex-row"
                 >
-                  <div className="w-7 h-7 rounded-xl flex items-center justify-center bg-gradient-to-br from-sky-600 to-cyan-500"
-                    style={{ boxShadow: '0 0 10px rgba(14,165,233,0.3)' }}>
-                    <Bot className="w-3.5 h-3.5 text-white" />
+                  <div className="flex-shrink-0">
+                    <AIBotAvatar size="sm" bounce={true} glow={true} />
                   </div>
                   <div className="px-4 py-3 rounded-2xl rounded-tl-md flex items-center gap-1"
                     style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.07)' }}>

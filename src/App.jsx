@@ -13,6 +13,9 @@ import DailyTracker from './DailyTracker'
 import Progress from './Progress'
 import Profile from './Profile'
 import FitnessTest from './FitnessTest'
+import FoodTracker from './FoodTracker'
+import ExpenseTracker from './ExpenseTracker'
+import MLInsights from './MLInsights'
 
 export default function App() {
   return (
@@ -44,6 +47,15 @@ export default function App() {
           } />
           <Route path="/fitness-test" element={
             <ProtectedRoute><FitnessTest /></ProtectedRoute>
+          } />
+          <Route path="/food-tracker" element={
+            <ProtectedRoute><FoodTracker /></ProtectedRoute>
+          } />
+          <Route path="/expense-tracker" element={
+            <ProtectedRoute><ExpenseTracker /></ProtectedRoute>
+          } />
+          <Route path="/ml-insights" element={
+            <ProtectedRoute><MLInsights /></ProtectedRoute>
           } />
           <Route path="/profile" element={
             <ProtectedRoute><Profile /></ProtectedRoute>
