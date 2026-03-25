@@ -1,0 +1,62 @@
+FitSense Project Structure & File Descriptions
+================================================
+
+ROOT DIRECTORY
+--------------
+.env                        - Environment variables (Supabase keys, API URLs, etc.).
+.env.example                - Template for environment variables to be configured by other developers.
+.gitignore                 - Specifies which files/folders should be ignored by Git (e.g., node_modules, .env).
+README.md                   - Project documentation, setup instructions, and overview.
+RUN_MIGRATION.html          - An HTML helper file possibly for database migration guidance.
+apply_green_theme_jsx.js    - Utility script to apply themes to JSX components.
+build/                      - Production build folder (generated after running 'npm run build').
+build.log / build_output.log- Logs generated during the build process.
+err.log                     - Error logs for troubleshooting.
+fitsense 12.sql             - SQL schema and data export for the FitSense database.
+fitsense.me.txt            - Project-related notes or reference text.
+migration_complete.sql      - SQL script for applying final database migrations.
+package.json                - Project metadata, dependencies, and scripts (start, build, test).
+package-lock.json           - Exact versions of installed npm packages.
+policies.sql                - Supabase RLS (Row Level Security) policies for database tables.
+postcss.config.js           - Configuration for PostCSS, primarily for Tailwind CSS processing.
+render.yaml                 - Configuration for deploying the project to Render.com.
+schema.sql                  - Core database schema definitions (tables, relationships).
+tailwind.config.js          - Tailwind CSS configuration for themes, colors, and content paths.
+vercel.json                  - Vercel-specific deployment configuration.
+
+PUBLIC/
+-------
+index.html                  - The main entry point HTML file for the React application.
+
+SRC/ (SOURCE CODE)
+------------------
+index.js                    - Entry point for the React application that renders the App component.
+index.css                   - Main CSS file (includes Tailwind directives and global styles).
+App.jsx                     - Root component that manages main routing and layout.
+AppLayout.jsx               - Wrapper component for consistent page layouts (shares Sidebar across pages).
+AuthContext.jsx             - React Context provider for managing user authentication state.
+ProtectedRoute.jsx          - Component wrapper to restrict access to pages that require a login.
+Sidebar.jsx                 - Navigation component for the application sidebar.
+
+Components & Pages:
+Dashboard.jsx               - The main status page showing overview metrics and progress.
+Profile.jsx                 - User profile page to view and edit personal details.
+ProfileSetup.jsx            - Multi-step form for new users to set initial health goals.
+Login.jsx                   - User login page.
+Signup.jsx                  - User registration page.
+DailyTracker.jsx            - Interface for tracking daily activities (workouts, water, etc.).
+DietPlanner.jsx             - UI for generating and viewing dietary plans.
+FatigueChatbot.jsx          - AI-powered chatbot assistant for fatigue-related health advice.
+Progress.jsx                - Detailed visualization of fitness and health progress over time.
+Transformation.jsx          - Page to track physical transformations (before/after photos/metrics).
+
+Logic & Utilities:
+supabase.js                 - Supabase client initialization and core database interaction functions.
+useData.js                  - Custom React hook for fetching and managing application data.
+dietAlgorithm.js            - Logic/algorithms for calculating meal plans and nutritional requirements.
+workoutGenerator.js         - Logic for generating personalized workout plans based on user profiles.
+disciplineScore.js          - Logic for calculating the "Discipline Score" based on user consistency.
+fitnessCalculator.js        - Utility functions for BMI, BMR, and other health calculations.
+
+Assets:
+gym_bg.png                  - Background image used in the application UI.

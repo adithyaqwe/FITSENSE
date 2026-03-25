@@ -3,12 +3,14 @@
 // AI-Tailored algorithm by goal & level
 // =============================================
 
-export function generateWorkoutPlan(fitnessGoal, rawActivityLevel) {
+export function generateWorkoutPlan(fitnessGoal, rawActivityLevel, manualLevel) {
   // 1. Determine Fitness Level
-  let level = "beginner";
-  if (['extremely_active', 'athlete'].includes(rawActivityLevel)) level = "extreme";
-  else if (['very_active'].includes(rawActivityLevel)) level = "advanced";
-  else if (['moderately_active'].includes(rawActivityLevel)) level = "intermediate";
+  let level = manualLevel || "beginner";
+  if (!manualLevel) {
+    if (['extremely_active', 'athlete'].includes(rawActivityLevel)) level = "extreme";
+    else if (['very_active'].includes(rawActivityLevel)) level = "advanced";
+    else if (['moderately_active'].includes(rawActivityLevel)) level = "intermediate";
+  }
 
   // Sanitize goal input
   const sanitizedGoal = (fitnessGoal || '').toLowerCase().replace(/_/g, ' ');

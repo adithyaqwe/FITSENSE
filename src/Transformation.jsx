@@ -14,6 +14,20 @@ const DAY_COLORS = {
   Thursday: '#a855f7', Friday: '#ef4444', Saturday: '#eab308', Sunday: '#6b7280',
 }
 
+const GOAL_OPTIONS = [
+  { value: 'fat_loss', label: 'Fat Loss', emoji: '🔥' },
+  { value: 'muscle_gain', label: 'Muscle Gain', emoji: '💪' },
+  { value: 'lean_body', label: 'Lean Body', emoji: '⚡' },
+  { value: 'bulk', label: 'Bulk', emoji: '🏋️' },
+]
+
+const LEVEL_OPTIONS = [
+  { value: 'beginner', label: 'Beginner' },
+  { value: 'intermediate', label: 'Intermediate' },
+  { value: 'advanced', label: 'Advanced' },
+  { value: 'extreme', label: 'Extreme' },
+]
+
 function ExerciseRow({ exercise, index, onPlay }) {
   return (
     <motion.div
@@ -79,10 +93,13 @@ export default function Transformation() {
   const activePlan = currentPlan || savedPlan?.plan_data
   const todayWorkout = activePlan?.week?.[selectedDay]
 
-  const generatePlan = async () => {
+  const generatePlan = async (goal, level) => {
     if (!metrics) return
     setGenerating(true)
-    const plan = generateWorkoutPlan(metrics.fitness_goal, metrics.activity_level)
+    const targetGoal = goal || metrics.fitness_goal
+    const targetLevel = level || null // Only pass if manually selected
+    const plan = generateWorkoutPlan(targetGoal, metrics.activity_level, targetLevel)
+    
     await supabase.from('workout_plans').update({ is_active: false }).eq('user_id', user.id)
     const { error } = await supabase.from('workout_plans').insert({
       user_id: user.id, plan_name: plan.planName, goal: plan.goal,
@@ -102,15 +119,39 @@ export default function Transformation() {
             <h1 className="font-display text-5xl text-white tracking-wide">TRANSFORMATION</h1>
             <p className="font-body text-white/40 text-sm mt-1">Your personalized weekly workout program</p>
             {activePlan && (
-              <div className="flex gap-2 mt-3">
-                <span className="badge badge-brand capitalize">{activePlan.level}</span>
-                <span className="badge" style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.4)', border: '1px solid rgba(255,255,255,0.08)' }}>
-                  {activePlan.goal?.replace('_', ' ')}
-                </span>
+              <div className="flex flex-col gap-4 mt-5 bg-white/2 p-4 rounded-2xl border border-white/5">
+                <div className="flex items-center gap-3 flex-wrap">
+                  <span className="section-label min-w-[60px]">Select Goal</span>
+                  <div className="flex gap-2 flex-wrap">
+                    {GOAL_OPTIONS.map(g => (
+                      <button 
+                        key={g.value} 
+                        onClick={() => generatePlan(g.value, activePlan.level)}
+                        className={`badge transition-all hover:scale-105 active:scale-95 ${activePlan.goal === g.value ? 'badge-brand px-4 py-1.5' : 'bg-white/5 text-white/30 hover:bg-white/10 hover:text-white/60'}`}
+                      >
+                        <span className="text-base mr-1">{g.emoji}</span> {g.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div className="flex items-center gap-3 flex-wrap border-t border-white/5 pt-3">
+                  <span className="section-label min-w-[60px]">Intensity</span>
+                  <div className="flex gap-2 flex-wrap">
+                    {LEVEL_OPTIONS.map(l => (
+                      <button 
+                        key={l.value} 
+                        onClick={() => generatePlan(activePlan.goal, l.value)}
+                        className={`badge transition-all hover:scale-105 active:scale-95 ${activePlan.level === l.value ? 'badge-brand px-4 py-1.5' : 'bg-white/5 text-white/30 hover:bg-white/10 hover:text-white/60'}`}
+                      >
+                        {l.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
               </div>
             )}
           </div>
-          <button onClick={generatePlan} disabled={!metrics || generating}
+          <button onClick={() => generatePlan(activePlan?.goal, activePlan?.level)} disabled={!metrics || generating}
             className="btn-brand flex items-center gap-2.5 px-5 py-2.5 text-sm disabled:opacity-40 disabled:cursor-not-allowed">
             <RefreshCw className={`w-4 h-4 ${generating ? 'animate-spin' : ''}`} />
             {generating ? 'Generating…' : activePlan ? 'Regenerate' : 'Generate Program'}
@@ -138,7 +179,7 @@ export default function Transformation() {
             </div>
             <p className="font-body text-white font-semibold mb-2">Ready to transform?</p>
             <p className="font-body text-white/40 text-sm mb-6">Generate your personalized weekly workout program</p>
-            <button onClick={generatePlan} className="btn-brand px-8 py-3 text-sm mx-auto">Start Transformation</button>
+            <button onClick={() => generatePlan()} className="btn-brand px-8 py-3 text-sm mx-auto">Start Transformation</button>
           </motion.div>
         )}
 
