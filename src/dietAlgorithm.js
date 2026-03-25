@@ -7,8 +7,16 @@ export function generateDietPlan(dailyCalories, macros, rawGoal) {
   // Map our UI goals (fat_loss, etc) to string keys used in user's algorithm
   const goalMap = {
     'fat_loss': 'fatLoss',
+    'fat loss': 'fatLoss',
+    'fatloss': 'fatLoss',
     'muscle_gain': 'muscleGain',
+    'muscle gain': 'muscleGain',
+    'muscle gaining': 'muscleGain',
+    'musle gain': 'muscleGain',
+    'musle gaining': 'muscleGain',
     'lean_body': 'lean',
+    'lean body': 'lean',
+    'lean': 'lean',
     'bulk': 'bulk'
   }
   const goal = goalMap[rawGoal] || 'lean';

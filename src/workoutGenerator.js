@@ -6,20 +6,35 @@
 export function generateWorkoutPlan(fitnessGoal, rawActivityLevel) {
   // 1. Determine Fitness Level
   let level = "beginner";
-  if (['extremely_active'].includes(rawActivityLevel)) level = "extreme";
+  if (['extremely_active', 'athlete'].includes(rawActivityLevel)) level = "extreme";
   else if (['very_active'].includes(rawActivityLevel)) level = "advanced";
   else if (['moderately_active'].includes(rawActivityLevel)) level = "intermediate";
 
+  // Sanitize goal input
+  const sanitizedGoal = (fitnessGoal || '').toLowerCase().replace(/_/g, ' ');
+  const goalMap = {
+    'fat loss': 'fat_loss',
+    'fatloss': 'fat_loss',
+    'muscle gain': 'muscle_gain',
+    'muscle gaining': 'muscle_gain',
+    'musle gain': 'muscle_gain',
+    'musle gaining': 'muscle_gain',
+    'lean body': 'lean_body',
+    'lean': 'lean_body',
+    'bulk': 'bulk'
+  }
+  const mainGoal = goalMap[sanitizedGoal] || fitnessGoal;
+
   // 2. Goal-Specific Tuning Parameters
   const tuning = {
-    fat_loss: { repRange: "15-20", setMult: 3, rest: "45s", cardioBonus: 10 },
-    muscle_gain: { repRange: "8-12", setMult: 4, rest: "90s", cardioBonus: 0 },
-    bulk: { repRange: "5-8", setMult: 5, rest: "120s", cardioBonus: -5 },
-    lean_body: { repRange: "10-15", setMult: 4, rest: "60s", cardioBonus: 5 },
-  }[fitnessGoal] || { repRange: "10-12", setMult: 3, rest: "60s", cardioBonus: 0 };
+    fat_loss: { repRange: "15-20", setMult: 3, rest: "45s", cardioBonus: 10, focus: "Endurance" },
+    muscle_gain: { repRange: "8-12", setMult: 4, rest: "90s", cardioBonus: 0, focus: "Hypertrophy" },
+    bulk: { repRange: "5-8", setMult: 5, rest: "120s", cardioBonus: -5, focus: "Power/Strength" },
+    lean_body: { repRange: "10-15", setMult: 4, rest: "60s", cardioBonus: 5, focus: "Tone/Stamina" },
+  }[mainGoal] || { repRange: "10-12", setMult: 3, rest: "60s", cardioBonus: 0, focus: "Balanced" };
 
-  // 3. Exercise Database (Shared)
-  const db = {
+  // 3. Exercise Database (Shared + Goal Specific)
+  const baseDb = {
     beginner: {
       chest: [{ name: "Push-ups", muscle: "Chest", equipment: "Bodyweight" }, { name: "Dumbbell Press", muscle: "Chest", equipment: "Dumbbells" }],
       back: [{ name: "Dumbbell Rows", muscle: "Back", equipment: "Dumbbells" }, { name: "Lat Pulldowns", muscle: "Back/Lats", equipment: "Cable" }],
@@ -30,20 +45,20 @@ export function generateWorkoutPlan(fitnessGoal, rawActivityLevel) {
       cardio: [{ name: "Brisk Walking", muscle: "Heart", equipment: "None" }, { name: "Cycling", muscle: "Heart", equipment: "Bike" }],
     },
     intermediate: {
-      chest: [{ name: "Barbell Bench Press", muscle: "Chest", equipment: "Barbell" }, { name: "Incline Dumbbell Press", muscle: "Chest", equipment: "Dumbbells" }],
-      back: [{ name: "Pull-ups", muscle: "Back", equipment: "Bar/Bodyweight" }, { name: "Barbell Rows", muscle: "Back", equipment: "Barbell" }],
-      legs: [{ name: "Barbell Squats", muscle: "Legs", equipment: "Barbell" }, { name: "Romanian Deadlifts", muscle: "Posterior Chain", equipment: "Barbell" }],
-      shoulders: [{ name: "Military Press", muscle: "Shoulders", equipment: "Barbell" }, { name: "Face Pulls", muscle: "Shoulders", equipment: "Cable" }],
-      arms: [{ name: "Barbell Curls", muscle: "Biceps", equipment: "Barbell" }, { name: "Skull Crushers", muscle: "Triceps", equipment: "Barbell/Dumbbells" }],
+      chest: [{ name: "Barbell Bench Press", muscle: "Chest", equipment: "Barbell" }, { name: "Incline Dumbbell Press", muscle: "Chest", equipment: "Dumbbells" }, { name: "Cable Flyes", muscle: "Chest", equipment: "Cable" }],
+      back: [{ name: "Pull-ups", muscle: "Back", equipment: "Bar/Bodyweight" }, { name: "Barbell Rows", muscle: "Back", equipment: "Barbell" }, { name: "Face Pulls", muscle: "Rear Delts/Back", equipment: "Cable" }],
+      legs: [{ name: "Barbell Squats", muscle: "Legs", equipment: "Barbell" }, { name: "Romanian Deadlifts", muscle: "Posterior Chain", equipment: "Barbell" }, { name: "Leg Extensions", muscle: "Quads", equipment: "Machine" }],
+      shoulders: [{ name: "Military Press", muscle: "Shoulders", equipment: "Barbell" }, { name: "Arnold Press", muscle: "Shoulders", equipment: "Dumbbells" }],
+      arms: [{ name: "Barbell Curls", muscle: "Biceps", equipment: "Barbell" }, { name: "Skull Crushers", muscle: "Triceps", equipment: "Barbell/Dumbbells" }, { name: "Hammer Curls", muscle: "Biceps/Forearms", equipment: "Dumbbells" }],
       core: [{ name: "Hanging Leg Raises", muscle: "Core", equipment: "Bar" }, { name: "Russian Twists", muscle: "Core", equipment: "Medicine Ball" }],
       cardio: [{ name: "HIIT Sprints", muscle: "Heart", equipment: "Treadmill" }, { name: "Stairmaster", muscle: "Heart", equipment: "Machine" }],
     },
     advanced: {
-      chest: [{ name: "Weighted Dips", muscle: "Chest/Triceps", equipment: "Dip Bar + Weight" }, { name: "Pause Bench Press", muscle: "Chest", equipment: "Barbell" }],
-      back: [{ name: "Weighted Pull-ups", muscle: "Back", equipment: "Bar + Weight" }, { name: "Deadlifts", muscle: "Full Body", equipment: "Barbell" }],
-      legs: [{ name: "Front Squats", muscle: "Legs/Core", equipment: "Barbell" }, { name: "Bulgarian Split Squats", muscle: "Legs", equipment: "Dumbbells" }],
+      chest: [{ name: "Weighted Dips", muscle: "Chest/Triceps", equipment: "Dip Bar + Weight" }, { name: "Pause Bench Press", muscle: "Chest", equipment: "Barbell" }, { name: "Dumbbell Flyes", muscle: "Chest", equipment: "Dumbbells" }],
+      back: [{ name: "Weighted Pull-ups", muscle: "Back", equipment: "Bar + Weight" }, { name: "Deadlifts", muscle: "Full Body", equipment: "Barbell" }, { name: "T-Bar Rows", muscle: "Back", equipment: "T-Bar" }],
+      legs: [{ name: "Front Squats", muscle: "Legs/Core", equipment: "Barbell" }, { name: "Bulgarian Split Squats", muscle: "Legs", equipment: "Dumbbells" }, { name: "Leg Press", muscle: "Legs", equipment: "Machine" }],
       shoulders: [{ name: "Overhead Pin Press", muscle: "Shoulders", equipment: "Rack" }, { name: "Lateral Raises (Heavy)", muscle: "Shoulders", equipment: "Dumbbells" }],
-      arms: [{ name: "Preacher Curls", muscle: "Biceps", equipment: "Bench" }, { name: "Close Grip Bench", muscle: "Triceps", equipment: "Barbell" }],
+      arms: [{ name: "Preacher Curls", muscle: "Biceps", equipment: "Bench" }, { name: "Close Grip Bench", muscle: "Triceps", equipment: "Barbell" }, { name: "Reverse Curls", muscle: "Brachialis", equipment: "Barbell" }],
       core: [{ name: "Ab Wheel Rollouts", muscle: "Core", equipment: "Ab Wheel" }, { name: "Dragon Flags", muscle: "Core", equipment: "Bench" }],
       cardio: [{ name: "Concept2 Rower Sprints", muscle: "Full Body", equipment: "Rower" }, { name: "Assault Bike", muscle: "Full Body", equipment: "Assault Bike" }],
     },
@@ -80,27 +95,39 @@ export function generateWorkoutPlan(fitnessGoal, rawActivityLevel) {
     "HIIT Sprints": "https://www.youtube.com/embed/6i7BvPPr1_w",
   };
 
-  // 4. Generate the Week
-  const basePlan = db[level];
-  const applyTuning = (exs) => exs.map(ex => ({
-    ...ex,
-    sets: tuning.setMult,
-    reps: tuning.repRange,
-    rest: tuning.rest,
-    videoUrl: videoMap[ex.name] || `https://www.youtube.com/embed?listType=search&list=${encodeURIComponent(ex.name + ' exercise demo')}`
-  }));
+  const plan = baseDb[level];
+
+  // Goals-Specific Modification logic
+  const modifyForGoal = (exs) => exs.map(ex => {
+    let finalReps = tuning.repRange;
+    let finalSets = tuning.setMult;
+    
+    // Muscle gain tweaks
+    if (mainGoal === 'muscle_gain' || mainGoal === 'bulk') {
+      if (ex.equipment === 'Barbell' || ex.equipment === 'Dumbbells') {
+        finalSets += 1; // Extra set for hypertrophy/bulk on heavy lifts
+      }
+    }
+
+    return {
+      ...ex,
+      sets: finalSets,
+      reps: finalReps,
+      rest: tuning.rest,
+      videoUrl: videoMap[ex.name] || `https://www.youtube.com/embed?listType=search&list=${encodeURIComponent(ex.name + ' exercise demo')}`
+    }
+  });
 
   const weeklySchedule = {
-    Monday: { name: "Chest & Triceps", emoji: "🏋️", type: "strength", exercises: applyTuning([...basePlan.chest, ...basePlan.arms]), duration: 45 + tuning.cardioBonus },
-    Tuesday: { name: "Back & Biceps", emoji: "💪", type: "strength", exercises: applyTuning([...basePlan.back, ...basePlan.arms]), duration: 45 + tuning.cardioBonus },
-    Wednesday: { name: "Active Recovery", emoji: "🧘", type: "recovery", exercises: applyTuning(basePlan.cardio), duration: 30 + tuning.cardioBonus },
-    Thursday: { name: "Legs & Core", emoji: "🦵", type: "strength", exercises: applyTuning([...basePlan.legs, ...basePlan.core]), duration: 50 + tuning.cardioBonus },
-    Friday: { name: "Shoulders & Arms", emoji: "🎯", type: "strength", exercises: applyTuning([...basePlan.shoulders, ...basePlan.arms]), duration: 45 + tuning.cardioBonus },
-    Saturday: { name: "Full Body HIIT", emoji: "⚡", type: "cardio", exercises: applyTuning([...basePlan.core, ...basePlan.cardio]), duration: 40 + tuning.cardioBonus },
-    Sunday: { name: "Rest Day", emoji: "😴", type: "rest", exercises: [], duration: 0, notes: "Complete rest and recovery." },
+    Monday: { name: `Chest & Triceps (${tuning.focus})`, emoji: "🏋️", type: "strength", exercises: modifyForGoal([...plan.chest, ...plan.arms]), duration: 45 + tuning.cardioBonus },
+    Tuesday: { name: `Back & Biceps (${tuning.focus})`, emoji: "💪", type: "strength", exercises: modifyForGoal([...plan.back, ...plan.arms]), duration: 45 + tuning.cardioBonus },
+    Wednesday: { name: "Active Recovery", emoji: "🧘", type: "recovery", exercises: modifyForGoal(plan.cardio), duration: 30 + tuning.cardioBonus },
+    Thursday: { name: `Legs & Core (${tuning.focus})`, emoji: "🦵", type: "strength", exercises: modifyForGoal([...plan.legs, ...plan.core]), duration: 50 + tuning.cardioBonus },
+    Friday: { name: `Shoulders & Arms (${tuning.focus})`, emoji: "🎯", type: "strength", exercises: modifyForGoal([...plan.shoulders, ...plan.arms]), duration: 45 + tuning.cardioBonus },
+    Saturday: { name: `Full Body HIIT (${tuning.focus})`, emoji: "⚡", type: "cardio", exercises: modifyForGoal([...plan.core, ...plan.cardio]), duration: 40 + tuning.cardioBonus },
+    Sunday: { name: "Rest Day", emoji: "😴", type: "rest", exercises: [], duration: 0, notes: "Complete rest and recover for maximum muscle growth." },
   };
 
-  // 5. Add meta info
   for (const day in weeklySchedule) {
     if (weeklySchedule[day].type !== 'rest') {
       weeklySchedule[day].warmup = ['5-10 min light cardio', 'Dynamic stretches', 'Warmup sets'];
@@ -109,8 +136,8 @@ export function generateWorkoutPlan(fitnessGoal, rawActivityLevel) {
   }
 
   return {
-    planName: `${level.charAt(0).toUpperCase() + level.slice(1)} ${fitnessGoal.replace('_', ' ')} Program`,
-    goal: fitnessGoal,
+    planName: `${level.charAt(0).toUpperCase() + level.slice(1)} ${mainGoal.replace('_', ' ')} Program`,
+    goal: mainGoal,
     level,
     week: weeklySchedule,
     generatedAt: new Date().toISOString(),
