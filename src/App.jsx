@@ -12,6 +12,7 @@ import Transformation from './Transformation'
 import DailyTracker from './DailyTracker'
 import Progress from './Progress'
 import Profile from './Profile'
+import FitnessTest from './FitnessTest'
 
 export default function App() {
   return (
@@ -40,6 +41,9 @@ export default function App() {
           } />
           <Route path="/progress" element={
             <ProtectedRoute><Progress /></ProtectedRoute>
+          } />
+          <Route path="/fitness-test" element={
+            <ProtectedRoute><FitnessTest /></ProtectedRoute>
           } />
           <Route path="/profile" element={
             <ProtectedRoute><Profile /></ProtectedRoute>

@@ -1,6 +1,6 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Zap, LayoutDashboard, Utensils, Dumbbell, CheckSquare, TrendingUp, User, LogOut, Menu, X } from 'lucide-react'
+import { Zap, LayoutDashboard, Utensils, Dumbbell, CheckSquare, TrendingUp, User, LogOut, Menu, X, Trophy } from 'lucide-react'
 import { useState } from 'react'
 import { useAuth } from './AuthContext'
 
@@ -10,6 +10,7 @@ const NAV_ITEMS = [
   { icon: Dumbbell, label: 'Transformation', path: '/transformation' },
   { icon: CheckSquare, label: 'Daily Tracker', path: '/tracker' },
   { icon: TrendingUp, label: 'Progress', path: '/progress' },
+  { icon: Trophy, label: 'Fitness Test', path: '/fitness-test' },
   { icon: User, label: 'Profile', path: '/profile' },
 ]
 
