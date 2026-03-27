@@ -108,13 +108,16 @@ export function useTodayTasks() {
   }, [user, today])
 
   const upsert = async (updates) => {
-    const { data: result, error } = await supabase
-      .from('daily_tasks')
-      .upsert({ user_id: user.id, task_date: today, ...updates }, { onConflict: 'user_id,task_date' })
-      .select()
-      .single()
-    if (!error) setData(result)
-    return { data: result, error }
+    const { data: existing } = await supabase.from('daily_tasks').select('id').eq('user_id', user.id).eq('task_date', today).maybeSingle();
+    let res;
+    if (existing) {
+      res = await supabase.from('daily_tasks').update(updates).eq('id', existing.id).select().single();
+    } else {
+      res = await supabase.from('daily_tasks').insert({ user_id: user.id, task_date: today, ...updates }).select().single();
+    }
+    if (!res.error) setData(res.data)
+    else console.error("Error saving daily task", res.error)
+    return res
   }
 
   useEffect(() => { fetch() }, [fetch])
@@ -138,18 +141,44 @@ export function useProgress(limit = 30) {
       .eq('user_id', user.id)
       .order('log_date', { ascending: false })
       .limit(limit)
-    setData(data || [])
+      
+    const localData = JSON.parse(localStorage.getItem(`progress_${user.id}`) || '[]');
+    let merged = [...(data || []), ...localData];
+    const map = new Map();
+    merged.forEach(x => map.set(x.log_date, x));
+    merged = Array.from(map.values()).sort((a,b) => new Date(b.log_date) - new Date(a.log_date));
+
+    setData(merged.slice(0, limit))
     setLoading(false)
   }, [user, limit])
 
   const logProgress = async (entry) => {
-    const { data: result, error } = await supabase
-      .from('progress_tracking')
-      .upsert({ user_id: user.id, ...entry }, { onConflict: 'user_id,log_date' })
-      .select()
-      .single()
-    if (!error) fetch()
-    return { data: result, error }
+    let res = { error: null };
+    try {
+      const { data: existing, error: selectErr } = await supabase.from('progress_tracking').select('id').eq('user_id', user.id).eq('log_date', entry.log_date).maybeSingle();
+      if (selectErr) throw selectErr;
+      
+      if (existing) {
+        res = await supabase.from('progress_tracking').update(entry).eq('id', existing.id).select().single();
+      } else {
+        res = await supabase.from('progress_tracking').insert({ user_id: user.id, ...entry }).select().single();
+      }
+    } catch (err) {
+      res.error = err;
+    }
+    
+    if (res.error) {
+      console.warn("Using local storage fallback due to DB error:", res.error);
+      const k = `progress_${user.id}`;
+      const localData = JSON.parse(localStorage.getItem(k) || '[]');
+      const existingIdx = localData.findIndex(x => x.log_date === entry.log_date);
+      if (existingIdx >= 0) localData[existingIdx] = { ...localData[existingIdx], ...entry };
+      else localData.push({ id: Date.now().toString(), log_date: entry.log_date, weight_kg: entry.weight_kg, notes: entry.notes });
+      localStorage.setItem(k, JSON.stringify(localData));
+    }
+    
+    fetch()
+    return res
   }
 
   useEffect(() => { fetch() }, [fetch])

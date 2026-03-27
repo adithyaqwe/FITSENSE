@@ -357,15 +357,7 @@ export default function MLInsights() {
             </div>
             <div>
               <h1 className="text-2xl font-bold text-white">Deep AI Insights</h1>
-              <p className="text-white/40 text-sm">TensorFlow Multilayer Perceptron · Neural Forecasting</p>
             </div>
-          </div>
-          <div className="mt-3 px-3 py-2 rounded-xl inline-flex items-center gap-2"
-            style={{ background: 'rgba(168,85,247,0.1)', border: '1px solid rgba(168,85,247,0.25)' }}>
-            <Zap className="w-3.5 h-3.5" style={{ color: '#c084fc' }} />
-            <span className="text-xs" style={{ color: '#c084fc' }}>
-              True Machine Learning predictions leveraging @tensorflow/tfjs and backpropagation
-            </span>
           </div>
         </motion.div>
 

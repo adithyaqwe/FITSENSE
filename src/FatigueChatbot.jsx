@@ -4,6 +4,7 @@ import { X, Send, User, ChevronDown, Database, WifiOff } from 'lucide-react'
 import { supabase, isSupabaseConnected } from './supabase'
 import { useAuth } from './AuthContext'
 import AIBotAvatar from './AIBotAvatar'
+import * as tf from '@tensorflow/tfjs'
 
 // ─── Fatigue Knowledge Base ───────────────────────────────────────────────────
 
@@ -213,80 +214,127 @@ const FATIGUE_RESPONSES = {
 
 // ─── AI Response Engine ───────────────────────────────────────────────────────
 
-function generateResponse(userMessage) {
-  const msg = userMessage.toLowerCase().trim()
+// ─── AI Response Engine (TensorFlow JS) ────────────────────────────────────────
 
-  // Greeting
-  if (FATIGUE_RESPONSES.greet.some(g => msg.includes(g))) {
-    return [
-      '👋 Hey! I\'m your FitSense Recovery Bot.',
-      '',
-      'Tell me where you\'re feeling fatigue or soreness, and I\'ll recommend the best recovery exercises and stretches for you!',
-      '',
-      'For example: *"My legs are sore"* or *"I feel totally exhausted"*',
-    ].join('\n')
-  }
+const INTENT_LABELS = ['legs', 'back', 'shoulders', 'chest', 'arms', 'core', 'doms', 'energy', 'general', 'greet', 'help']
+const VOCAB = Array.from(new Set([
+  'leg', 'legs', 'quad', 'quads', 'hamstring', 'calf', 'calves', 'thigh', 'knee', 'squat', 'lower', 'body',
+  'back', 'spine', 'upper', 'lats', 'traps', 'rhomboid', 'deadlift',
+  'shoulder', 'shoulders', 'rotator', 'delt', 'delts', 'neck', 'bench', 'press', 'overhead',
+  'chest', 'pec', 'pecs', 'pectoral', 'push',
+  'arm', 'arms', 'bicep', 'tricep', 'forearm', 'elbow', 'curl', 'extension',
+  'core', 'abs', 'abdominal', 'stomach', 'oblique', 'plank', 'crunch', 'midsection',
+  'sore', 'doms', 'pain', 'aching', 'stiff', 'hurts', 'burning',
+  'tired', 'exhausted', 'fatigue', 'energy', 'drained', 'sluggish', 'worn', 'out', 'burnt', 'cant', 'move',
+  'workout', 'gym', 'exercise', 'recover',
+  'hello', 'hi', 'hey', 'whats', 'up', 'howdy', 'good', 'morning', 'evening', 'sup',
+  'help', 'what', 'can', 'you', 'do', 'how', 'does', 'this', 'work', 'options', 'commands',
+  // Extra noise words to handle raw user input
+  'my', 'i', 'am', 'is', 'are', 'feeling', 'have', 'need', 'some', 'after', 'yesterday'
+]))
 
-  // Help
-  if (FATIGUE_RESPONSES.help.keywords.some(k => msg.includes(k))) {
-    return FATIGUE_RESPONSES.help.response.join('\n')
-  }
-
-  // DOMS / general soreness
-  if (FATIGUE_RESPONSES.doms.keywords.some(k => msg.includes(k)) && !hasMuscleMatch(msg)) {
-    return FATIGUE_RESPONSES.doms.response.join('\n')
-  }
-
-  // Energy / tiredness
-  if (FATIGUE_RESPONSES.energy.keywords.some(k => msg.includes(k)) && !hasMuscleMatch(msg)) {
-    return FATIGUE_RESPONSES.energy.response.join('\n')
-  }
-
-  // Muscle-specific matches
-  for (const [key, data] of Object.entries(FATIGUE_RESPONSES.muscles)) {
-    if (data.keywords.some(k => msg.includes(k))) {
-      const lines = [
-        `I can see you're dealing with **${key} fatigue**. Here's your personalized recovery plan! 💪`,
-        '',
-        ...data.exercises,
-        '',
-        ...data.stretches,
-        '',
-        data.tip
-      ]
-      return lines.join('\n')
-    }
-  }
-
-  // General fatigue fallback
-  if (msg.includes('fatigue') || msg.includes('recover') || msg.includes('workout') || msg.includes('gym') || msg.includes('exercise')) {
-    const lines = [
-      '💪 Here\'s a general active recovery plan for you:',
-      '',
-      ...FATIGUE_RESPONSES.general.exercises,
-      '',
-      ...FATIGUE_RESPONSES.general.stretches,
-      '',
-      FATIGUE_RESPONSES.general.tip
-    ]
-    return lines.join('\n')
-  }
-
-  // Default fallback
-  return [
-    'I specialize in fatigue recovery! 🏋️',
-    '',
-    'Try telling me:',
-    '• Which muscles are sore (e.g., "my legs hurt")',
-    '• How you\'re feeling (e.g., "I\'m exhausted")',
-    '• Or type **help** to see what I can do!',
-  ].join('\n')
+function encodeText(text) {
+  const vec = new Array(VOCAB.length).fill(0)
+  const words = text.toLowerCase().match(/[a-z]+/g) || []
+  words.forEach(w => {
+    const idx = VOCAB.indexOf(w)
+    if (idx > -1) vec[idx] += 1
+  })
+  return vec
 }
 
-function hasMuscleMatch(msg) {
-  return Object.values(FATIGUE_RESPONSES.muscles).some(data =>
-    data.keywords.some(k => msg.includes(k))
-  )
+let fatigueModel = null
+
+async function trainFatigueModel() {
+  if (fatigueModel) return fatigueModel
+
+  // Training Data Samples
+  const trainingExamples = [
+    { text: "my legs are very sore after squats", intent: 0 },
+    { text: "quads and calves hurt badly", intent: 0 },
+    { text: "hamstring is totally stiff", intent: 0 },
+    { text: "lower body fatigue", intent: 0 },
+    { text: "my lower back is sore after deadlifts", intent: 1 },
+    { text: "spine aches from lifting", intent: 1 },
+    { text: "lats and upper back pain", intent: 1 },
+    { text: "my shoulders are fatigued from overhead press", intent: 2 },
+    { text: "neck and traps are tight", intent: 2 },
+    { text: "my chest is sore after bench press", intent: 3 },
+    { text: "pecs are burning and tight", intent: 3 },
+    { text: "arms and biceps are exhausted", intent: 4 },
+    { text: "triceps extension hurts", intent: 4 },
+    { text: "forearm pain after curl", intent: 4 },
+    { text: "abs are burning and sore", intent: 5 },
+    { text: "stomach and core are tight plank", intent: 5 },
+    { text: "i am so sore everywhere pain", intent: 6 },
+    { text: "stiff muscle pain and aching doms", intent: 6 },
+    { text: "i feel completely drained and exhausted", intent: 7 },
+    { text: "zero energy i am sluggish tired", intent: 7 },
+    { text: "burnt out and cant move", intent: 7 },
+    { text: "need a full recovery plan", intent: 8 },
+    { text: "fatigued from my workout gym", intent: 8 },
+    { text: "how to recover after exercise", intent: 8 },
+    { text: "hello hi there", intent: 9 },
+    { text: "good morning what sup", intent: 9 },
+    { text: "how does this work help", intent: 10 },
+    { text: "what can you do for me", intent: 10 },
+  ]
+
+  const xs = tf.tensor2d(trainingExamples.map(ex => encodeText(ex.text)), [trainingExamples.length, VOCAB.length])
+  const ys = tf.tensor1d(trainingExamples.map(ex => ex.intent), 'int32')
+  const ysOneHot = tf.oneHot(ys, INTENT_LABELS.length)
+
+  const model = tf.sequential()
+  model.add(tf.layers.dense({ units: 24, inputShape: [VOCAB.length], activation: 'relu' }))
+  model.add(tf.layers.dense({ units: INTENT_LABELS.length, activation: 'softmax' }))
+  model.compile({ optimizer: 'adam', loss: 'categoricalCrossentropy', metrics: ['accuracy'] })
+
+  // Quick offline training in browser
+  await model.fit(xs, ysOneHot, { epochs: 60, verbose: 0 })
+  xs.dispose()
+  ys.dispose()
+  ysOneHot.dispose()
+
+  fatigueModel = model
+  return model
+}
+
+async function generateMLResponse(userMessage) {
+  const msg = userMessage.toLowerCase().trim()
+  if (!fatigueModel) await trainFatigueModel()
+
+  const vec = encodeText(msg)
+  if (vec.every(v => v === 0)) {
+    return "🧠 I processed your message but couldn't identify specific muscle groups or intents in my tensor data!\n\nTry giving me more context like: *'my body is sore'* or *'my completely exhausted'*."
+  }
+
+  const inputTensor = tf.tensor2d([vec], [1, VOCAB.length])
+  const prediction = fatigueModel.predict(inputTensor)
+  const scores = await prediction.data()
+  inputTensor.dispose()
+  prediction.dispose()
+
+  let maxIdx = 0
+  let maxScore = 0
+  for (let i = 0; i < scores.length; i++) {
+    if (scores[i] > maxScore) { maxScore = scores[i]; maxIdx = i }
+  }
+
+  const intent = INTENT_LABELS[maxIdx]
+  const confidence = Math.round(maxScore * 100)
+
+  if (intent === 'greet') return `👋 Hello! I'm your AI Recovery Bot.\n\nI just analyzed your greeting using my TensorFlow neural network (${confidence}% confidence). Tell me where you feel soreness, and I'll generate a targeted recovery plan! 🏋️‍♀️`
+  if (intent === 'help') return `🤖 **FitSense Fatigue AI — Capabilities:**\n\nI use a Machine Learning intent classifier built directly in the browser. I determine what hurts based on your phrasing.\n\nTry asking me:\n• *"My lats are killing me"*\n• *"I feel drained"*`
+  if (intent === 'doms') return `🔥 **DOMS Recovery (AI Confidence: ${confidence}%)**\n\nI analyzed your phrasing and detected generalized Delayed Onset Muscle Soreness. Here is your dynamically generated plan:\n\n• 10 min easy walk\n• Foam rolling globally\n\n💡 Tip: Contrast showers accelerate DOMS recovery.`
+  if (intent === 'energy') return `⚡ **Low Energy Detected (${confidence}% match)**\n\nMy neural network analyzed your syntax and determined you are exhausted.\n\n**Low-intensity movement:**\n• 10 min slow walk outside\n• Gentle yoga\n\n💡 Tip: Try deep box breathing to reset your nervous system.`
+  if (intent === 'general') return `💪 **General Active Recovery Plan (AI Confidence: ${confidence}%)**\n\nI processed your input into my neural matrix and generated a full-body recovery approach:\n\n• 10–15 min brisk walk\n• Bodyweight flow\n• Sun salutation\n\n💡 Tip: Prioritize 8 hrs sleep and deep hydration.`
+  
+  const data = FATIGUE_RESPONSES.muscles[intent]
+  if (data) {
+    return `🧠 **ML Analysis Complete:**\nI analyzed '${userMessage}' using our Multi-Layer Perceptron model.\n\n**Identified Fatigue Region:** ${intent.toUpperCase()} (${confidence}% Confidence)\n\nHere is your dynamically queried prescriptive plan:\n\n${data.exercises.join('\n')}\n\n${data.stretches.join('\n')}\n\n${data.tip}`
+  }
+
+  return "I analyzed your text, but recommend resting the specific area you mentioned!"
 }
 
 // ─── Message Renderer (supports basic markdown) ───────────────────────────────
@@ -421,15 +469,14 @@ export default function FatigueChatbot() {
     // Persist user message
     persistMessage('user', messageText)
 
-    // Simulate bot "thinking" delay
-    setTimeout(() => {
-      const botResponse = generateResponse(messageText)
+    // Await ML Prediction
+    setTimeout(async () => {
+      const botResponse = await generateMLResponse(messageText)
       const botMsg = { id: Date.now() + 1, role: 'bot', text: botResponse, time: new Date() }
       setMessages(prev => [...prev, botMsg])
       setTyping(false)
-      // Persist bot response
       persistMessage('bot', botResponse)
-    }, 900 + Math.random() * 600)
+    }, 400 + Math.random() * 400)
   }
 
   const handleKeyDown = (e) => {

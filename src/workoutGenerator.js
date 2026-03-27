@@ -35,43 +35,43 @@ export function generateWorkoutPlan(fitnessGoal, rawActivityLevel, manualLevel) 
     lean_body: { repRange: "10-15", setMult: 4, rest: "60s", cardioBonus: 5, focus: "Tone/Stamina" },
   }[mainGoal] || { repRange: "10-12", setMult: 3, rest: "60s", cardioBonus: 0, focus: "Balanced" };
 
-  // 3. Exercise Database (Shared + Goal Specific)
+  // 3. Exercise Database (Shared + Goal Specific) - World Class Coach Edition
   const baseDb = {
     beginner: {
-      chest: [{ name: "Push-ups", muscle: "Chest", equipment: "Bodyweight" }, { name: "Dumbbell Press", muscle: "Chest", equipment: "Dumbbells" }],
-      back: [{ name: "Dumbbell Rows", muscle: "Back", equipment: "Dumbbells" }, { name: "Lat Pulldowns", muscle: "Back/Lats", equipment: "Cable" }],
-      legs: [{ name: "Bodyweight Squats", muscle: "Legs", equipment: "Bodyweight" }, { name: "Lunges", muscle: "Legs", equipment: "Bodyweight" }],
-      shoulders: [{ name: "Dumbbell Overhead Press", muscle: "Shoulders", equipment: "Dumbbells" }, { name: "Lateral Raises", muscle: "Shoulders", equipment: "Dumbbells" }],
-      arms: [{ name: "Bicep Curls", muscle: "Biceps", equipment: "Dumbbells" }, { name: "Tricep Dips", muscle: "Triceps", equipment: "Bench" }],
-      core: [{ name: "Plank", muscle: "Core", equipment: "Bodyweight" }, { name: "Crunches", muscle: "Core", equipment: "Bodyweight" }],
-      cardio: [{ name: "Brisk Walking", muscle: "Heart", equipment: "None" }, { name: "Cycling", muscle: "Heart", equipment: "Bike" }],
+      chest: [{ name: "Machine Chest Press", muscle: "Chest", equipment: "Machine" }, { name: "Incline Push-Ups", muscle: "Chest", equipment: "Bodyweight" }],
+      back: [{ name: "Seated Cable Rows", muscle: "Back", equipment: "Cable" }, { name: "Assisted Pull-Up Machine", muscle: "Back/Lats", equipment: "Machine" }],
+      legs: [{ name: "Goblet Squats", muscle: "Legs", equipment: "Kettlebell" }, { name: "Leg Press Machine", muscle: "Legs", equipment: "Machine" }],
+      shoulders: [{ name: "Seated Dumbbell Press", muscle: "Shoulders", equipment: "Dumbbells" }, { name: "Machine Lateral Raises", muscle: "Shoulders", equipment: "Machine" }],
+      arms: [{ name: "Cable Bicep Curls", muscle: "Biceps", equipment: "Cable" }, { name: "Rope Tricep Pushdowns", muscle: "Triceps", equipment: "Cable" }],
+      core: [{ name: "Forearm Plank", muscle: "Core", equipment: "Bodyweight" }, { name: "Bird-Dog Extensions", muscle: "Core", equipment: "Bodyweight" }],
+      cardio: [{ name: "Steady State Treadmill Walk", muscle: "Heart", equipment: "Treadmill" }, { name: "Stationary Bike Sprints", muscle: "Heart", equipment: "Bike" }],
     },
     intermediate: {
-      chest: [{ name: "Barbell Bench Press", muscle: "Chest", equipment: "Barbell" }, { name: "Incline Dumbbell Press", muscle: "Chest", equipment: "Dumbbells" }, { name: "Cable Flyes", muscle: "Chest", equipment: "Cable" }],
-      back: [{ name: "Pull-ups", muscle: "Back", equipment: "Bar/Bodyweight" }, { name: "Barbell Rows", muscle: "Back", equipment: "Barbell" }, { name: "Face Pulls", muscle: "Rear Delts/Back", equipment: "Cable" }],
-      legs: [{ name: "Barbell Squats", muscle: "Legs", equipment: "Barbell" }, { name: "Romanian Deadlifts", muscle: "Posterior Chain", equipment: "Barbell" }, { name: "Leg Extensions", muscle: "Quads", equipment: "Machine" }],
-      shoulders: [{ name: "Military Press", muscle: "Shoulders", equipment: "Barbell" }, { name: "Arnold Press", muscle: "Shoulders", equipment: "Dumbbells" }],
-      arms: [{ name: "Barbell Curls", muscle: "Biceps", equipment: "Barbell" }, { name: "Skull Crushers", muscle: "Triceps", equipment: "Barbell/Dumbbells" }, { name: "Hammer Curls", muscle: "Biceps/Forearms", equipment: "Dumbbells" }],
-      core: [{ name: "Hanging Leg Raises", muscle: "Core", equipment: "Bar" }, { name: "Russian Twists", muscle: "Core", equipment: "Medicine Ball" }],
-      cardio: [{ name: "HIIT Sprints", muscle: "Heart", equipment: "Treadmill" }, { name: "Stairmaster", muscle: "Heart", equipment: "Machine" }],
+      chest: [{ name: "Barbell Bench Press (RPE 8)", muscle: "Chest", equipment: "Barbell" }, { name: "Incline Dumbbell Flyes", muscle: "Chest", equipment: "Dumbbells" }, { name: "Pec Deck Machine", muscle: "Chest", equipment: "Machine" }],
+      back: [{ name: "Barbell Pendlay Rows", muscle: "Back", equipment: "Barbell" }, { name: "Wide-Grip Lat Pulldowns", muscle: "Back", equipment: "Cable" }, { name: "Face Pulls", muscle: "Rear Delts/Back", equipment: "Cable" }],
+      legs: [{ name: "Barbell Back Squats", muscle: "Legs", equipment: "Barbell" }, { name: "Romanian Deadlifts (RDL)", muscle: "Posterior Chain", equipment: "Barbell" }, { name: "Walking Lunges", muscle: "Quads", equipment: "Dumbbells" }],
+      shoulders: [{ name: "Standing Military Press", muscle: "Shoulders", equipment: "Barbell" }, { name: "Cable Lateral Raises", muscle: "Shoulders", equipment: "Cable" }],
+      arms: [{ name: "EZ-Bar Preacher Curls", muscle: "Biceps", equipment: "EZ-Bar" }, { name: "Overhead Dumbbell Tricep Extension", muscle: "Triceps", equipment: "Dumbbell" }, { name: "Hammer Curls", muscle: "Biceps/Forearms", equipment: "Dumbbells" }],
+      core: [{ name: "Hanging Knee Raises", muscle: "Core", equipment: "Bar" }, { name: "Cable Woodchoppers", muscle: "Core", equipment: "Cable" }],
+      cardio: [{ name: "Rowing Machine Intervals", muscle: "Heart", equipment: "Rower" }, { name: "Stairmaster", muscle: "Heart", equipment: "Machine" }],
     },
     advanced: {
-      chest: [{ name: "Weighted Dips", muscle: "Chest/Triceps", equipment: "Dip Bar + Weight" }, { name: "Pause Bench Press", muscle: "Chest", equipment: "Barbell" }, { name: "Dumbbell Flyes", muscle: "Chest", equipment: "Dumbbells" }],
-      back: [{ name: "Weighted Pull-ups", muscle: "Back", equipment: "Bar + Weight" }, { name: "Deadlifts", muscle: "Full Body", equipment: "Barbell" }, { name: "T-Bar Rows", muscle: "Back", equipment: "T-Bar" }],
-      legs: [{ name: "Front Squats", muscle: "Legs/Core", equipment: "Barbell" }, { name: "Bulgarian Split Squats", muscle: "Legs", equipment: "Dumbbells" }, { name: "Leg Press", muscle: "Legs", equipment: "Machine" }],
-      shoulders: [{ name: "Overhead Pin Press", muscle: "Shoulders", equipment: "Rack" }, { name: "Lateral Raises (Heavy)", muscle: "Shoulders", equipment: "Dumbbells" }],
-      arms: [{ name: "Preacher Curls", muscle: "Biceps", equipment: "Bench" }, { name: "Close Grip Bench", muscle: "Triceps", equipment: "Barbell" }, { name: "Reverse Curls", muscle: "Brachialis", equipment: "Barbell" }],
-      core: [{ name: "Ab Wheel Rollouts", muscle: "Core", equipment: "Ab Wheel" }, { name: "Dragon Flags", muscle: "Core", equipment: "Bench" }],
-      cardio: [{ name: "Concept2 Rower Sprints", muscle: "Full Body", equipment: "Rower" }, { name: "Assault Bike", muscle: "Full Body", equipment: "Assault Bike" }],
+      chest: [{ name: "Deficit Push-ups (Weighted)", muscle: "Chest/Triceps", equipment: "Plates/Vest" }, { name: "Pause Bench Press (3s pause)", muscle: "Chest", equipment: "Barbell" }, { name: "Decline Cable Crossovers", muscle: "Chest", equipment: "Cable" }],
+      back: [{ name: "Weighted Pull-ups (Pronated)", muscle: "Back", equipment: "Bar + Weight" }, { name: "Meadows Rows", muscle: "Back", equipment: "Barbell" }, { name: "Straight-arm Pulldowns", muscle: "Back", equipment: "Cable" }],
+      legs: [{ name: "Front Squats (Olympic Stance)", muscle: "Legs/Core", equipment: "Barbell" }, { name: "Bulgarian Split Squats", muscle: "Legs", equipment: "Dumbbells" }, { name: "Glute-Ham Raises (GHR)", muscle: "Posterior Chain", equipment: "Machine/Floor" }],
+      shoulders: [{ name: "Seated Arnold Press", muscle: "Shoulders", equipment: "Dumbbells" }, { name: "Lean-Away Cable Lateral Raises", muscle: "Shoulders", equipment: "Cable" }],
+      arms: [{ name: "Spider Curls (EZ-Bar)", muscle: "Biceps", equipment: "Bench/EZ-Bar" }, { name: "Skull Crushers to Close-Grip Bench", muscle: "Triceps", equipment: "Barbell" }, { name: "Reverse EZ-Bar Curls", muscle: "Brachialis", equipment: "Barbell" }],
+      core: [{ name: "Toes-to-Bar", muscle: "Core", equipment: "Bar" }, { name: "Ab Wheel Rollouts (From Feet)", muscle: "Core", equipment: "Ab Wheel" }],
+      cardio: [{ name: "Tabata Sprints", muscle: "Full Body", equipment: "Assault Bike" }, { name: "Heavy Sled Push/Pull", muscle: "Full Body", equipment: "Sled" }],
     },
     extreme: {
-      chest: [{ name: "One-arm Pushups", muscle: "Chest", equipment: "Bodyweight" }, { name: "Heavy Weighted Dips", muscle: "Chest", equipment: "Dip Bar" }, { name: "Incline Bench Press (Heavy)", muscle: "Chest", equipment: "Barbell" }],
-      back: [{ name: "Muscle-ups", muscle: "Back/Arms", equipment: "Bar" }, { name: "Heavy Block Pulls", muscle: "Back", equipment: "Barbell" }, { name: "Front Lever Holds", muscle: "Core/Back", equipment: "Bar" }],
-      legs: [{ name: "Heavy Back Squats", muscle: "Legs", equipment: "Barbell" }, { name: "Pistol Squats", muscle: "Legs", equipment: "Bodyweight" }, { name: "Box Jumps (High)", muscle: "Legs", equipment: "Box" }],
-      shoulders: [{ name: "Handstand Pushups", muscle: "Shoulders", equipment: "Floor/Wall" }, { name: "Heavy Push Press", muscle: "Shoulders", equipment: "Barbell" }],
-      arms: [{ name: "Strict Barbell Curls", muscle: "Biceps", equipment: "Barbell" }, { name: "Weighted Tricep Dips", muscle: "Triceps", equipment: "Bar" }],
-      core: [{ name: "Human Flag Practice", muscle: "Core/Lateral", equipment: "Vertical Bar" }, { name: "L-sit Holds", muscle: "Core", equipment: "Floor/Bar" }],
-      cardio: [{ name: "100 Burpees for Time", muscle: "Heart", equipment: "Floor" }, { name: "Murph WOD (weighted vest)", muscle: "Full Body", equipment: "Everything" }],
+      chest: [{ name: "Plyometric Clapping Push-ups", muscle: "Chest", equipment: "Bodyweight" }, { name: "Ring Dips (Weighted)", muscle: "Chest", equipment: "Rings" }, { name: "Heavy Floor Press", muscle: "Chest", equipment: "Barbell" }],
+      back: [{ name: "Strict Muscle-Ups", muscle: "Back/Arms", equipment: "Bar/Rings" }, { name: "Heavy Rack Pulls (Above Knee)", muscle: "Back", equipment: "Barbell" }, { name: "Front Lever Holds", muscle: "Core/Back", equipment: "Bar" }],
+      legs: [{ name: "Heavy Zercher Squats", muscle: "Legs", equipment: "Barbell" }, { name: "Pistol Squats (Weighted)", muscle: "Legs", equipment: "Kettlebell" }, { name: "Box Jumps (Max Depth)", muscle: "Legs", equipment: "Box" }],
+      shoulders: [{ name: "Handstand Push-Ups (Strict)", muscle: "Shoulders", equipment: "Wall" }, { name: "Heavy Push Press", muscle: "Shoulders", equipment: "Barbell" }, { name: "Bradford Press", muscle: "Shoulders", equipment: "Barbell" }],
+      arms: [{ name: "Strict Cheat Curls (Heavy Eccentric)", muscle: "Biceps", equipment: "Barbell" }, { name: "JM Press", muscle: "Triceps", equipment: "Barbell" }],
+      core: [{ name: "Dragon Flags", muscle: "Core", equipment: "Bench" }, { name: "Human Flag Progressions", muscle: "Core/Lateral", equipment: "Vertical Bar" }, { name: "Weighted L-sit Holds", muscle: "Core", equipment: "Floor/Bar" }],
+      cardio: [{ name: "100 Burpees for Time", muscle: "Heart", equipment: "Floor" }, { name: "Concept2 Rower 500m Max Sprint", muscle: "Full Body", equipment: "Rower" }],
     },
   };
 
@@ -81,6 +81,22 @@ export function generateWorkoutPlan(fitnessGoal, rawActivityLevel, manualLevel) 
   const modifyForGoal = (exs) => exs.map(ex => {
     let finalReps = tuning.repRange;
     let finalSets = tuning.setMult;
+    let finalRest = tuning.rest;
+    
+    // Level-Specific Overrides (Different stages get different volume & reps)
+    if (level === 'beginner') {
+      finalSets = Math.max(2, finalSets - 1);
+      finalReps = "12-15";
+      finalRest = "90s";
+    } else if (level === 'advanced') {
+      finalSets += 1;
+      finalReps = "6-10";
+      finalRest = "120s";
+    } else if (level === 'extreme') {
+      finalSets += 2;
+      finalReps = "3-6";
+      finalRest = "180s";
+    }
     
     // Muscle gain tweaks
     if (mainGoal === 'muscle_gain' || mainGoal === 'bulk') {
@@ -93,7 +109,7 @@ export function generateWorkoutPlan(fitnessGoal, rawActivityLevel, manualLevel) 
       ...ex,
       sets: finalSets,
       reps: finalReps,
-      rest: tuning.rest,
+      rest: finalRest,
     }
   });
 

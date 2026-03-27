@@ -160,8 +160,8 @@ export default function Profile() {
           </div>
 
           {/* Training Profile */}
-          <div className="rounded-2xl p-5" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)' }}>
-            <p className="section-label mb-4">Training Profile</p>
+          <div className="rounded-2xl p-5" style={{ background: 'rgba(14, 165, 233, 0.08)', border: '1px solid rgba(14, 165, 233, 0.2)' }}>
+            <p className="section-label mb-4" style={{ color: '#38bdf8' }}>Training Profile</p>
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="section-label block mb-2">Activity Level</label>

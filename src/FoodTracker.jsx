@@ -6,8 +6,9 @@ import {
 } from 'recharts'
 import {
   Utensils, Plus, Calendar, TrendingUp, Scale, Flame, Award,
-  ChevronDown, Check, X, Loader2, Beef, Egg, Leaf, Banana
+  ChevronDown, Check, X, Loader2, Beef, Egg, Leaf, Banana, Droplet, Square, Wheat
 } from 'lucide-react'
+import { useHealthMetrics } from './useData'
 
 // ─── Food nutrition data ──────────────────────────────────────────────────────
 const FOODS = [
@@ -27,9 +28,21 @@ const FOODS = [
     id: 'bananas', label: 'Bananas', unit: 'pcs', icon: Banana, color: '#facc15',
     per100: { protein: 1.1, calories: 89 }, perItem: { protein: 1.3, calories: 105 }
   },
+  {
+    id: 'paneer', label: 'Paneer', unit: 'g', icon: Square, color: '#fdba74',
+    per100: { protein: 18, calories: 265 }
+  },
+  {
+    id: 'soya_chunks', label: 'Soya Chunks', unit: 'g', icon: Wheat, color: '#d97706',
+    per100: { protein: 52, calories: 345 }
+  },
+  {
+    id: 'milk', label: 'Milk', unit: 'ml', icon: Droplet, color: '#bae6fd',
+    per100: { protein: 3.4, calories: 60 }
+  },
 ]
 
-const CHART_COLORS = ['#f97316', '#eab308', '#22c55e', '#facc15']
+const CHART_COLORS = ['#f97316', '#eab308', '#22c55e', '#facc15', '#fdba74', '#d97706', '#bae6fd']
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 const todayStr = () => new Date().toISOString().slice(0, 10)
@@ -66,9 +79,13 @@ const CustomTooltip = ({ active, payload, label }) => {
 }
 
 export default function FoodTracker() {
+  const { data: metrics } = useHealthMetrics()
+  const targetProtein = metrics?.weight_kg ? Math.round(metrics.weight_kg * 2.0) : 0
+  const targetCalories = metrics?.tdee ? Math.round(metrics.tdee) : 0
+
   const [logs, setLogs] = useState(() => loadFromStorage())
   const [date, setDate] = useState(todayStr())
-  const [form, setForm] = useState({ chicken: '', eggs: '', vegetables: '', bananas: '' })
+  const [form, setForm] = useState({ chicken: '', eggs: '', vegetables: '', bananas: '', paneer: '', soya_chunks: '', milk: '' })
   const [saved, setSaved] = useState(false)
   const [activeTab, setActiveTab] = useState('log') // log | daily | monthly
 
@@ -120,7 +137,7 @@ export default function FoodTracker() {
     const entry = {}
     FOODS.forEach(f => { if (form[f.id]) entry[f.id] = parseFloat(form[f.id]) || 0 })
     setLogs(prev => ({ ...prev, [date]: { ...(prev[date] || {}), ...entry } }))
-    setForm({ chicken: '', eggs: '', vegetables: '', bananas: '' })
+    setForm({ chicken: '', eggs: '', vegetables: '', bananas: '', paneer: '', soya_chunks: '', milk: '' })
     setSaved(true)
     setTimeout(() => setSaved(false), 2400)
   }
@@ -152,8 +169,8 @@ export default function FoodTracker() {
         {/* Stat Cards */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
           {[
-            { label: 'Protein Today', value: `${dailyTotal.protein}g`, icon: Scale, color: '#0ea5e9' },
-            { label: 'Calories Today', value: dailyTotal.calories, icon: Flame, color: '#f97316' },
+            { label: targetProtein ? `Protein Focus (${metrics.weight_kg}kg)` : 'Protein Today', value: targetProtein ? `${dailyTotal.protein} / ${targetProtein}g` : `${dailyTotal.protein}g`, icon: Scale, color: '#0ea5e9' },
+            { label: targetCalories ? 'Calorie Goal' : 'Calories Today', value: targetCalories ? `${dailyTotal.calories} / ${targetCalories}` : dailyTotal.calories, icon: Flame, color: '#f97316' },
             { label: 'Days Logged', value: Object.keys(monthlyData.daily).length || monthlyData.daily.length, icon: Calendar, color: '#a855f7' },
             { label: 'Monthly kcal', value: monthlyData.daily.reduce((a, r) => a + r.calories, 0), icon: TrendingUp, color: '#22c55e' },
           ].map((s, i) => (
@@ -272,8 +289,8 @@ export default function FoodTracker() {
                   <div className="mt-4 pt-4 flex justify-between" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
                     <span className="text-white/50 text-sm">Daily Total</span>
                     <div className="flex gap-4 text-sm font-bold">
-                      <span style={{ color: '#0ea5e9' }}>{dailyTotal.protein}g protein</span>
-                      <span style={{ color: '#f97316' }}>{dailyTotal.calories} kcal</span>
+                      <span style={{ color: '#0ea5e9' }}>{dailyTotal.protein}g {targetProtein ? `/ ${targetProtein}g` : ''} protein</span>
+                      <span style={{ color: '#f97316' }}>{dailyTotal.calories} {targetCalories ? `/ ${targetCalories}` : ''} kcal</span>
                     </div>
                   </div>
                 </div>

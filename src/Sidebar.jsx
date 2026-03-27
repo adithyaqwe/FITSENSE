@@ -17,7 +17,6 @@ const NAV_ITEMS = [
 const DIET_ITEMS = [
   { icon: Apple,          label: 'Food Tracker',   path: '/food-tracker'   },
   { icon: IndianRupee,    label: 'Expense Tracker',path: '/expense-tracker'},
-  { icon: Brain,          label: 'ML Insights',    path: '/ml-insights'   },
 ]
 
 function SidebarContent({ onClose }) {

@@ -93,9 +93,13 @@ export default function Transformation() {
     await supabase.from('workout_plans').update({ is_active: false }).eq('user_id', user.id)
     const { error } = await supabase.from('workout_plans').insert({
       user_id: user.id, plan_name: plan.planName, goal: plan.goal,
-      level: plan.level, plan_data: plan, is_active: true,
+      plan_data: plan, is_active: true, // removed 'level: plan.level' as it causes schema errors if column doesn't exist
     })
-    if (!error) { setCurrentPlan(plan); refetch() }
+    
+    if (error) console.error("Error saving plan:", error);
+    
+    setCurrentPlan(plan);
+    if (!error) refetch();
     setGenerating(false)
   }
 
@@ -220,7 +224,7 @@ export default function Transformation() {
             <div className="lg:col-span-2">
               <AnimatePresence mode="wait">
                 {todayWorkout && (
-                  <motion.div key={selectedDay} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.3 }}>
+                  <motion.div key={`${selectedDay}-${activePlan?.generatedAt}`} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.3 }}>
                     <div className="rounded-2xl overflow-hidden" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)' }}>
                       {/* Header */}
                       <div className="p-6 border-b border-white/5"

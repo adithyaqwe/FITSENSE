@@ -6,7 +6,7 @@ import {
 } from 'recharts'
 import {
   IndianRupee, Plus, Calendar, TrendingUp, ShoppingCart, PieChart as PieIcon,
-  Check, Beef, Egg, Leaf, Banana, Wallet
+  Check, Beef, Egg, Leaf, Banana, Wallet, Droplet, Square, Wheat
 } from 'lucide-react'
 
 // ─── Food items & colors ─────────────────────────────────────────────────────
@@ -15,8 +15,11 @@ const ITEMS = [
   { id: 'chicken',    label: 'Chicken',    icon: Beef,   color: '#f97316', unit: '₹' },
   { id: 'vegetables', label: 'Vegetables', icon: Leaf,   color: '#22c55e', unit: '₹' },
   { id: 'bananas',    label: 'Bananas',    icon: Banana, color: '#facc15', unit: '₹' },
+  { id: 'paneer',     label: 'Paneer',     icon: Square, color: '#fdba74', unit: '₹' },
+  { id: 'soya_chunks',label: 'Soya Chunks',icon: Wheat,  color: '#d97706', unit: '₹' },
+  { id: 'milk',       label: 'Milk',       icon: Droplet,color: '#bae6fd', unit: '₹' },
 ]
-const CHART_COLORS = ['#eab308', '#f97316', '#22c55e', '#facc15']
+const CHART_COLORS = ['#eab308', '#f97316', '#22c55e', '#facc15', '#fdba74', '#d97706', '#bae6fd']
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
 const todayStr = () => new Date().toISOString().slice(0, 10)
@@ -43,7 +46,7 @@ const CustomTooltip = ({ active, payload, label }) => {
 export default function ExpenseTracker() {
   const [logs, setLogs]     = useState(() => loadExpenses())
   const [date, setDate]     = useState(todayStr())
-  const [form, setForm]     = useState({ eggs: '', chicken: '', vegetables: '', bananas: '' })
+  const [form, setForm]     = useState({ eggs: '', chicken: '', vegetables: '', bananas: '', paneer: '', soya_chunks: '', milk: '' })
   const [saved, setSaved]   = useState(false)
   const [activeTab, setActiveTab] = useState('log')
 
@@ -86,7 +89,7 @@ export default function ExpenseTracker() {
     const entry = {}
     ITEMS.forEach(it => { if (form[it.id]) entry[it.id] = parseFloat(form[it.id]) || 0 })
     setLogs(prev => ({ ...prev, [date]: { ...(prev[date] || {}), ...entry } }))
-    setForm({ eggs: '', chicken: '', vegetables: '', bananas: '' })
+    setForm({ eggs: '', chicken: '', vegetables: '', bananas: '', paneer: '', soya_chunks: '', milk: '' })
     setSaved(true)
     setTimeout(() => setSaved(false), 2400)
   }

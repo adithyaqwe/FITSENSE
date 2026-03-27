@@ -10,12 +10,15 @@ const TEST_CARDS = [
   { id: 'plank', name: 'Forearm Plank', unit: 'sec', desc: 'Core stability and endurance', color: '#8b5cf6', tip: 'Do not let your hips sag or rise too high.' },
   { id: 'squats', name: 'Bodyweight Squats', unit: 'reps', desc: 'Lower body muscular endurance (1 min)', color: '#10b981', tip: 'Keep your chest up and weight on your heels.' },
   { id: 'flexibility', name: 'Sit & Reach', unit: 'cm', desc: 'Hamstring and lower back flexibility', color: '#f59e0b', tip: 'Reach as far as possible without bouncing.' },
+  { id: 'pullups', name: 'Strict Pull-ups', unit: 'reps', desc: 'Upper body pulling strength (max unbroken)', color: '#ec4899', tip: 'Start from a dead hang. Don\'t swing.' },
+  { id: 'burpees', name: 'Burpees', unit: 'reps', desc: 'Cardiovascular endurance (1 min max)', color: '#ef4444', tip: 'Chest to the floor, jump and clap at the top.' },
+  { id: 'wallsit', name: 'Wall Sit', unit: 'sec', desc: 'Lower body isometric endurance', color: '#06b6d4', tip: 'Keep knees at 90 degrees and back flat against the wall.' },
 ]
 
 export default function FitnessTest() {
   const { user } = useAuth()
   const [step, setStep] = useState(0)
-  const [values, setValues] = useState({ pushups: '', plank: '', squats: '', flexibility: '' })
+  const [values, setValues] = useState({ pushups: '', plank: '', squats: '', flexibility: '', pullups: '', burpees: '', wallsit: '' })
   const [saving, setSaving] = useState(false)
   const [result, setResult] = useState(null)
 
@@ -26,12 +29,18 @@ export default function FitnessTest() {
     const pl = parseInt(values.plank) || 0
     const s = parseInt(values.squats) || 0
     const f = parseInt(values.flexibility) || 0
+    const pu = parseInt(values.pullups) || 0
+    const b = parseInt(values.burpees) || 0
+    const w = parseInt(values.wallsit) || 0
     
     let score = 0
-    if (p > 10) score += 20; if (p > 25) score += 20; if (p > 40) score += 10
-    if (pl > 30) score += 10; if (pl > 60) score += 15; if (pl > 120) score += 10
-    if (s > 20) score += 10; if (s > 40) score += 10; if (s > 60) score += 10
-    if (f > 0) score += 10; if (f > 10) score += 5
+    if (p > 10) score += 10; if (p > 25) score += 5; if (p > 40) score += 5
+    if (pl > 30) score += 5; if (pl > 60) score += 5; if (pl > 120) score += 5
+    if (s > 20) score += 5; if (s > 40) score += 5; if (s > 60) score += 5
+    if (f > 0) score += 5; if (f > 10) score += 5
+    if (pu > 5) score += 10; if (pu > 10) score += 5; if (pu > 15) score += 5
+    if (b > 15) score += 5; if (b > 25) score += 5; if (b > 35) score += 5
+    if (w > 30) score += 4; if (w > 60) score += 3; if (w > 90) score += 3
     
     return Math.min(score, 100)
   }
@@ -44,7 +53,7 @@ export default function FitnessTest() {
       await supabase.from('daily_logs').insert({
         user_id: user.id,
         log_date: new Date().toISOString().split('T')[0],
-        notes: `Fitness Assessment: Pushups: ${values.pushups}, Plank: ${values.plank}s, Squats: ${values.squats}, Flexibility: ${values.flexibility}cm. Score: ${score}`
+        notes: `Fitness Test: Pushups: ${values.pushups}, Plank: ${values.plank}s, Squats: ${values.squats}, Flex: ${values.flexibility}cm, Pullups: ${values.pullups}, Burpees: ${values.burpees}, WallSit: ${values.wallsit}s. Score: ${score}`
       })
     } catch (e) {
       console.error(e)
@@ -90,7 +99,7 @@ export default function FitnessTest() {
                 </div>
 
                 <div className="relative z-10">
-                  <span className="text-brand-400 font-mono text-xs font-bold tracking-widest uppercase mb-4 block">Test {step + 1} of 4</span>
+                  <span className="text-brand-400 font-mono text-xs font-bold tracking-widest uppercase mb-4 block">Test {step + 1} of {TEST_CARDS.length}</span>
                   <h2 className="text-4xl font-display text-white mb-2" style={{ color: current.color }}>{current.name}</h2>
                   <p className="text-white/60 mb-8 max-w-md">{current.desc}</p>
 
@@ -125,10 +134,10 @@ export default function FitnessTest() {
                 <ChevronLeft size={20} /> Back
               </button>
               <button 
-                onClick={step === 3 ? handleFinish : () => setStep(s => s + 1)}
+                onClick={step === TEST_CARDS.length - 1 ? handleFinish : () => setStep(s => s + 1)}
                 className="flex items-center gap-2 btn-brand px-8 py-3"
               >
-                {step === 3 ? (saving ? 'Saving...' : 'Finish Assessment') : 'Next Test'} <ChevronRight size={20} />
+                {step === TEST_CARDS.length - 1 ? (saving ? 'Saving...' : 'Finish Assessment') : 'Next Test'} <ChevronRight size={20} />
               </button>
             </div>
           </div>

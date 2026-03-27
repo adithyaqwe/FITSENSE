@@ -33,7 +33,7 @@ export default function Progress() {
   const { data: streak } = useWorkoutStreak()
 
   const [showLogForm, setShowLogForm] = useState(false)
-  const [logForm, setLogForm] = useState({ weight_kg: '', body_fat_pct: '', notes: '' })
+  const [logForm, setLogForm] = useState({ date: new Date().toISOString().split('T')[0], weight_kg: '', notes: '' })
   const [saving, setSaving] = useState(false)
 
   const weekScore = weeklyTasks?.length ? calculateWeeklyScore(weeklyTasks) : null
@@ -41,7 +41,6 @@ export default function Progress() {
   const chartData = [...(progressData || [])].reverse().map(p => ({
     date: new Date(p.log_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
     weight: p.weight_kg,
-    bodyFat: p.body_fat_pct,
   }))
 
   const weekDisciplineData = weeklyTasks?.slice(0, 7).reverse().map(t => ({
@@ -60,12 +59,11 @@ export default function Progress() {
     e.preventDefault()
     setSaving(true)
     await logProgress({
-      log_date: new Date().toISOString().split('T')[0],
+      log_date: logForm.date,
       weight_kg: logForm.weight_kg ? parseFloat(logForm.weight_kg) : null,
-      body_fat_pct: logForm.body_fat_pct ? parseFloat(logForm.body_fat_pct) : null,
       notes: logForm.notes || null,
     })
-    setLogForm({ weight_kg: '', body_fat_pct: '', notes: '' })
+    setLogForm({ date: new Date().toISOString().split('T')[0], weight_kg: '', notes: '' })
     setShowLogForm(false)
     setSaving(false)
   }
@@ -106,19 +104,19 @@ export default function Progress() {
           <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
             className="rounded-2xl p-6"
             style={{ background: 'rgba(14, 165, 233,0.05)', border: '1px solid rgba(14, 165, 233,0.25)' }}>
-            <h3 className="font-display text-xl text-white tracking-wide mb-5">LOG TODAY'S PROGRESS</h3>
+            <h3 className="font-display text-xl text-white tracking-wide mb-5">LOG PROGRESS</h3>
             <form onSubmit={handleLogSubmit} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="section-label block mb-2">Date</label>
+                <input type="date" value={logForm.date}
+                  onChange={e => setLogForm(f => ({ ...f, date: e.target.value }))}
+                  required className="input-premium w-full px-4 py-3 text-sm [color-scheme:dark]" />
+              </div>
               <div>
                 <label className="section-label block mb-2">Weight (kg)</label>
                 <input type="number" step="0.1" value={logForm.weight_kg}
                   onChange={e => setLogForm(f => ({ ...f, weight_kg: e.target.value }))}
                   placeholder="75.5" className="input-premium w-full px-4 py-3 text-sm" />
-              </div>
-              <div>
-                <label className="section-label block mb-2">Body Fat %</label>
-                <input type="number" step="0.1" value={logForm.body_fat_pct}
-                  onChange={e => setLogForm(f => ({ ...f, body_fat_pct: e.target.value }))}
-                  placeholder="18.5" className="input-premium w-full px-4 py-3 text-sm" />
               </div>
               <div className="sm:col-span-2">
                 <label className="section-label block mb-2">Notes</label>
@@ -240,12 +238,6 @@ export default function Progress() {
                       <div>
                         <div className="font-mono text-brand-400 text-sm">{entry.weight_kg} kg</div>
                         <div className="font-body text-white/25 text-xs">weight</div>
-                      </div>
-                    )}
-                    {entry.body_fat_pct && (
-                      <div>
-                        <div className="font-mono text-black text-sm">{entry.body_fat_pct}%</div>
-                        <div className="font-body text-white/25 text-xs">body fat</div>
                       </div>
                     )}
                   </div>
