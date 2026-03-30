@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { CheckSquare, Droplets, Footprints, Dumbbell, Utensils, Plus, X, Zap } from 'lucide-react'
+import { CheckSquare, Droplets, Footprints, Dumbbell, Utensils, Plus, X, Zap, ArrowLeft } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 import AppLayout from './AppLayout'
 import { useTodayTasks } from './useData'
 import { calculateDisciplineScore, getMotivationalMessage } from './disciplineScore'
@@ -86,6 +87,7 @@ function NumericTracker({ label, value, onChange, goal, unit, color, icon: Icon 
 }
 
 export default function DailyTracker() {
+  const navigate = useNavigate()
   const { data: tasks, loading, upsert } = useTodayTasks()
   const [saving, setSaving] = useState(false)
   const [newTask, setNewTask] = useState('')
@@ -157,7 +159,17 @@ export default function DailyTracker() {
     <AppLayout>
       <div className="p-6 lg:p-8 max-w-2xl mx-auto space-y-5">
         {/* Header */}
-        <motion.div {...fade(0)}>
+        <motion.div {...fade(0)} className="space-y-4">
+          <button 
+            onClick={() => navigate('/dashboard')}
+            className="flex items-center gap-2 text-white/40 hover:text-brand-400 transition-colors group mb-2"
+          >
+            <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center group-hover:bg-brand-500/10 border border-white/5 group-hover:border-brand-500/20">
+              <ArrowLeft className="w-4 h-4" />
+            </div>
+            <span className="font-body text-xs font-medium tracking-wide uppercase">Back to Dashboard</span>
+          </button>
+          
           <p className="section-label mb-2">{new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</p>
           <div className="flex items-center justify-between">
             <h1 className="font-display text-5xl text-white tracking-wide">DAILY TRACKER</h1>

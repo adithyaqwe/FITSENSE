@@ -6,8 +6,9 @@ import {
 } from 'recharts'
 import {
   Utensils, Plus, Calendar, TrendingUp, Scale, Flame, Award,
-  ChevronDown, Check, X, Loader2, Beef, Egg, Leaf, Banana, Droplet, Square, Wheat
+  ChevronDown, Check, X, Loader2, Beef, Egg, Leaf, Banana, Droplet, Square, Wheat, ArrowLeft
 } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 import { useHealthMetrics } from './useData'
 
 // ─── Food nutrition data ──────────────────────────────────────────────────────
@@ -79,6 +80,7 @@ const CustomTooltip = ({ active, payload, label }) => {
 }
 
 export default function FoodTracker() {
+  const navigate = useNavigate()
   const { data: metrics } = useHealthMetrics()
   const targetProtein = metrics?.weight_kg ? Math.round(metrics.weight_kg * 2.0) : 0
   const targetCalories = metrics?.tdee ? Math.round(metrics.tdee) : 0
@@ -153,14 +155,24 @@ export default function FoodTracker() {
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
         {/* Header */}
-        <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
+        <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="mb-8 space-y-4">
+          <button 
+            onClick={() => navigate('/dashboard')}
+            className="flex items-center gap-2 text-white/40 hover:text-brand-400 transition-colors group mb-2"
+          >
+            <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center group-hover:bg-brand-500/10 border border-white/5 group-hover:border-brand-500/20">
+              <ArrowLeft className="w-4 h-4" />
+            </div>
+            <span className="font-body text-xs font-medium tracking-wide uppercase">Back to Dashboard</span>
+          </button>
+
           <div className="flex items-center gap-3 mb-2">
             <div className="w-10 h-10 rounded-xl flex items-center justify-center"
               style={{ background: 'linear-gradient(135deg, #22c55e, #16a34a)', boxShadow: '0 0 20px rgba(34,197,94,0.3)' }}>
               <Utensils className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-white">Food Tracker</h1>
+              <h1 className="text-2xl font-bold text-white uppercase tracking-wide">Food Tracker</h1>
               <p className="text-white/40 text-sm">Log daily meals · Track nutrition · Monitor trends</p>
             </div>
           </div>

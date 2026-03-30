@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { TrendingUp, Plus, Scale, Calendar, Flame, Award, X } from 'lucide-react'
+import { TrendingUp, Plus, Scale, Calendar, Flame, Award, X, ArrowLeft } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Cell } from 'recharts'
 import AppLayout from './AppLayout'
 import { useProgress, useWeeklyTasks, useWorkoutStreak } from './useData'
@@ -28,6 +29,7 @@ const fade = (delay = 0) => ({
 })
 
 export default function Progress() {
+  const navigate = useNavigate()
   const { data: progressData, logProgress } = useProgress(30)
   const { data: weeklyTasks } = useWeeklyTasks()
   const { data: streak } = useWorkoutStreak()
@@ -84,19 +86,31 @@ export default function Progress() {
     <AppLayout>
       <div className="p-6 lg:p-8 max-w-5xl mx-auto space-y-6">
         {/* Header */}
-        <motion.div {...fade(0)} className="flex items-start justify-between flex-wrap gap-4">
-          <div>
-            <p className="section-label mb-2">Analytics</p>
-            <h1 className="font-display text-5xl text-white tracking-wide">PROGRESS</h1>
-            <p className="font-body text-white/40 text-sm mt-1">Track your transformation over time</p>
-          </div>
-          <button onClick={() => setShowLogForm(!showLogForm)}
-            className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-body text-sm font-semibold transition-all ${
-              showLogForm ? 'text-white/60 hover:text-white' : 'btn-brand'
-            }`}
-            style={showLogForm ? { background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)' } : {}}>
-            {showLogForm ? <><X className="w-4 h-4" />Cancel</> : <><Plus className="w-4 h-4" />Log Today</>}
+        <motion.div {...fade(0)} className="space-y-4">
+          <button 
+            onClick={() => navigate('/dashboard')}
+            className="flex items-center gap-2 text-white/40 hover:text-brand-400 transition-colors group mb-2"
+          >
+            <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center group-hover:bg-brand-500/10 border border-white/5 group-hover:border-brand-500/20">
+              <ArrowLeft className="w-4 h-4" />
+            </div>
+            <span className="font-body text-xs font-medium tracking-wide uppercase">Back to Dashboard</span>
           </button>
+          
+          <div className="flex items-start justify-between flex-wrap gap-4">
+            <div>
+              <p className="section-label mb-2">Analytics</p>
+              <h1 className="font-display text-5xl text-white tracking-wide uppercase">Progress</h1>
+              <p className="font-body text-white/40 text-sm mt-1">Track your transformation over time</p>
+            </div>
+            <button onClick={() => setShowLogForm(!showLogForm)}
+              className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-body text-sm font-semibold transition-all ${
+                showLogForm ? 'text-white/60 hover:text-white' : 'btn-brand'
+              }`}
+              style={showLogForm ? { background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)' } : {}}>
+              {showLogForm ? <><X className="w-4 h-4" />Cancel</> : <><Plus className="w-4 h-4" />Log Today</>}
+            </button>
+          </div>
         </motion.div>
 
         {/* Log Form */}

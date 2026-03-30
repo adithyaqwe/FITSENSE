@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Dumbbell, RefreshCw, Clock, Flame } from 'lucide-react'
+import { Dumbbell, RefreshCw, Clock, Flame, ArrowLeft } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 import AppLayout from './AppLayout'
 import { useAuth } from './AuthContext'
 import { useHealthMetrics, useWorkoutPlan } from './useData'
@@ -70,6 +71,7 @@ const fade = (delay = 0) => ({
 })
 
 export default function Transformation() {
+  const navigate = useNavigate()
   const { user } = useAuth()
   const { data: metrics } = useHealthMetrics()
   const { data: savedPlan, refetch } = useWorkoutPlan()
@@ -107,49 +109,61 @@ export default function Transformation() {
     <AppLayout>
       <div className="p-6 lg:p-8 max-w-5xl mx-auto space-y-6">
         {/* Header */}
-        <motion.div {...fade(0)} className="flex items-start justify-between flex-wrap gap-4">
-          <div>
-            <p className="section-label mb-2">Training</p>
-            <h1 className="font-display text-5xl text-white tracking-wide">TRANSFORMATION</h1>
-            <p className="font-body text-white/40 text-sm mt-1">Your personalized weekly workout program</p>
-            {activePlan && (
-              <div className="flex flex-col gap-4 mt-5 bg-white/2 p-4 rounded-2xl border border-white/5">
-                <div className="flex items-center gap-3 flex-wrap">
-                  <span className="section-label min-w-[60px]">Select Goal</span>
-                  <div className="flex gap-2 flex-wrap">
-                    {GOAL_OPTIONS.map(g => (
-                      <button 
-                        key={g.value} 
-                        onClick={() => generatePlan(g.value, activePlan.level)}
-                        className={`badge transition-all hover:scale-105 active:scale-95 ${activePlan.goal === g.value ? 'badge-brand px-4 py-1.5' : 'bg-white/5 text-white/30 hover:bg-white/10 hover:text-white/60'}`}
-                      >
-                        <span className="text-base mr-1">{g.emoji}</span> {g.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                <div className="flex items-center gap-3 flex-wrap border-t border-white/5 pt-3">
-                  <span className="section-label min-w-[60px]">Intensity</span>
-                  <div className="flex gap-2 flex-wrap">
-                    {LEVEL_OPTIONS.map(l => (
-                      <button 
-                        key={l.value} 
-                        onClick={() => generatePlan(activePlan.goal, l.value)}
-                        className={`badge transition-all hover:scale-105 active:scale-95 ${activePlan.level === l.value ? 'badge-brand px-4 py-1.5' : 'bg-white/5 text-white/30 hover:bg-white/10 hover:text-white/60'}`}
-                      >
-                        {l.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-          <button onClick={() => generatePlan(activePlan?.goal, activePlan?.level)} disabled={!metrics || generating}
-            className="btn-brand flex items-center gap-2.5 px-5 py-2.5 text-sm disabled:opacity-40 disabled:cursor-not-allowed">
-            <RefreshCw className={`w-4 h-4 ${generating ? 'animate-spin' : ''}`} />
-            {generating ? 'Generating…' : activePlan ? 'Regenerate' : 'Generate Program'}
+        <motion.div {...fade(0)} className="space-y-4">
+          <button 
+            onClick={() => navigate('/dashboard')}
+            className="flex items-center gap-2 text-white/40 hover:text-brand-400 transition-colors group mb-2"
+          >
+            <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center group-hover:bg-brand-500/10 border border-white/5 group-hover:border-brand-500/20">
+              <ArrowLeft className="w-4 h-4" />
+            </div>
+            <span className="font-body text-xs font-medium tracking-wide uppercase">Back to Dashboard</span>
           </button>
+          
+          <div className="flex items-start justify-between flex-wrap gap-4">
+            <div>
+              <p className="section-label mb-2">Training</p>
+              <h1 className="font-display text-5xl text-white tracking-wide">TRANSFORMATION</h1>
+              <p className="font-body text-white/40 text-sm mt-1">Your personalized weekly workout program</p>
+              {activePlan && (
+                <div className="flex flex-col gap-4 mt-5 bg-white/2 p-4 rounded-2xl border border-white/5">
+                  <div className="flex items-center gap-3 flex-wrap">
+                    <span className="section-label min-w-[60px]">Select Goal</span>
+                    <div className="flex gap-2 flex-wrap">
+                      {GOAL_OPTIONS.map(g => (
+                        <button 
+                          key={g.value} 
+                          onClick={() => generatePlan(g.value, activePlan.level)}
+                          className={`badge transition-all hover:scale-105 active:scale-95 ${activePlan.goal === g.value ? 'badge-brand px-4 py-1.5' : 'bg-white/5 text-white/30 hover:bg-white/10 hover:text-white/60'}`}
+                        >
+                          <span className="text-base mr-1">{g.emoji}</span> {g.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3 flex-wrap border-t border-white/5 pt-3">
+                    <span className="section-label min-w-[60px]">Intensity</span>
+                    <div className="flex gap-2 flex-wrap">
+                      {LEVEL_OPTIONS.map(l => (
+                        <button 
+                          key={l.value} 
+                          onClick={() => generatePlan(activePlan.goal, l.value)}
+                          className={`badge transition-all hover:scale-105 active:scale-95 ${activePlan.level === l.value ? 'badge-brand px-4 py-1.5' : 'bg-white/5 text-white/30 hover:bg-white/10 hover:text-white/60'}`}
+                        >
+                          {l.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+            <button onClick={() => generatePlan(activePlan?.goal, activePlan?.level)} disabled={!metrics || generating}
+              className="btn-brand flex items-center gap-2.5 px-5 py-2.5 text-sm disabled:opacity-40 disabled:cursor-not-allowed">
+              <RefreshCw className={`w-4 h-4 ${generating ? 'animate-spin' : ''}`} />
+              {generating ? 'Generating…' : activePlan ? 'Regenerate' : 'Generate Program'}
+            </button>
+          </div>
         </motion.div>
 
         {/* No profile */}

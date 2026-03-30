@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Utensils, RefreshCw, Coffee, Sun, Moon, Apple, ChevronDown, ChevronUp } from 'lucide-react'
+import { Utensils, RefreshCw, Coffee, Sun, Moon, Apple, ChevronDown, ChevronUp, ArrowLeft } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 import AppLayout from './AppLayout'
 import { useAuth } from './AuthContext'
 import { useHealthMetrics, useDietPlan } from './useData'
@@ -101,6 +102,7 @@ const fade = (delay = 0) => ({
 })
 
 export default function DietPlanner() {
+  const navigate = useNavigate()
   const { user } = useAuth()
   const { data: metrics } = useHealthMetrics()
   const { data: savedPlan, refetch } = useDietPlan()
@@ -135,17 +137,29 @@ export default function DietPlanner() {
     <AppLayout>
       <div className="p-6 lg:p-8 max-w-4xl mx-auto space-y-6">
         {/* Header */}
-        <motion.div {...fade(0)} className="flex items-start justify-between flex-wrap gap-4">
-          <div>
-            <p className="section-label mb-2">Nutrition</p>
-            <h1 className="font-display text-5xl text-white tracking-wide">DIET PLAN</h1>
-            <p className="font-body text-white/40 text-sm mt-1">AI-generated meals based on your metrics</p>
-          </div>
-          <button onClick={generatePlan} disabled={!metrics || generating}
-            className="btn-brand flex items-center gap-2.5 px-6 py-3 text-sm disabled:opacity-40 disabled:cursor-not-allowed">
-            <RefreshCw className={`w-4 h-4 ${generating ? 'animate-spin' : ''}`} />
-            {generating ? 'Generating…' : activePlan ? 'Regenerate' : 'Generate Plan'}
+        <motion.div {...fade(0)} className="space-y-4">
+          <button 
+            onClick={() => navigate('/dashboard')}
+            className="flex items-center gap-2 text-white/40 hover:text-brand-400 transition-colors group mb-2"
+          >
+            <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center group-hover:bg-brand-500/10 border border-white/5 group-hover:border-brand-500/20">
+              <ArrowLeft className="w-4 h-4" />
+            </div>
+            <span className="font-body text-xs font-medium tracking-wide uppercase">Back to Dashboard</span>
           </button>
+          
+          <div className="flex items-start justify-between flex-wrap gap-4">
+            <div>
+              <p className="section-label mb-2">Nutrition</p>
+              <h1 className="font-display text-5xl text-white tracking-wide uppercase">Diet Plan</h1>
+              <p className="font-body text-white/40 text-sm mt-1">AI-generated meals based on your metrics</p>
+            </div>
+            <button onClick={generatePlan} disabled={!metrics || generating}
+              className="btn-brand flex items-center gap-2.5 px-6 py-3 text-sm disabled:opacity-40 disabled:cursor-not-allowed">
+              <RefreshCw className={`w-4 h-4 ${generating ? 'animate-spin' : ''}`} />
+              {generating ? 'Generating…' : activePlan ? 'Regenerate' : 'Generate Plan'}
+            </button>
+          </div>
         </motion.div>
 
         {/* No profile */}
